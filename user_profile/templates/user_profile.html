@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Hero Image Section -->
+    <div class="hero-image"></div>
+
+    <!-- Container for User Card -->
+    <div class="container">
+        <div class="row">
+            <!-- Left Column - User Card -->
+            <div class="col-md-4">
+                <div class="card user-card shadow-sm">
+                    <div class="card-body">
+                        <img src="https://picsum.photos/200/300" alt="User Image">
+                        <h5 class="card-title mt-2">Nice to see you, Emir!</h5>
+                        <p class="card-text">You have 53,375 points</p>
+                        <a href="#" class="btn btn-primary">View Profile</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Column - Content Area -->
+            <div class="col-md-8">
+                <!-- Add your right side content here -->
+                <div class="content-area">
+                    <h3>Your Activity</h3>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    <p>This space is ready for additional content.</p>
+                    <br>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .hero-image {
+            background: url('https://picsum.photos/1920/600') center center/cover no-repeat;
+            height: 300px;  /* Reduced height */
+            width: 100%;
+            margin-bottom: 120px;  /* Added margin to create space for card */
+        }
+
+        .user-card {
+            margin-top: -100px;
+            z-index: 10;
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+            background: white;  /* Added background color */
+        }
+
+        .user-card img {
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-top: -50px;
+            border: 4px solid white;  /* Added border */
+        }
+
+        .user-card .card-body {
+            text-align: center;
+            padding: 1.5rem;  /* Added more padding */
+        }
+
+        .container {
+            position: relative;
+        }
+    </style>
+{% endblock content %}
