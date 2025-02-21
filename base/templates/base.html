@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart City Portal</title>
+    <title>ADD TITLE LATER</title>
     <!-- Bootstrap 5.0 CSS -->
     <link href="#" 
           rel="stylesheet" 
@@ -36,14 +36,7 @@
             background-color: #dddddd !important;
         }
         /* Keep the navbar items side by side */
-        .nav-link {
-            display: inline-flex !important;
-            align-items: center;
-            color: #fff !important;
-            margin: 0 15px;
-            text-decoration: none;
-            transition: color 0.3s ease-in-out;
-        }
+
 
         /* Hide the text label by default */
         .link-text {
@@ -51,16 +44,19 @@
             margin-left: 8px;
             color: black;
         }
+        .nav-link img {
+    display: block;
+    transition: opacity 0.3s ease-in-out;
+}
 
         /* Show text, hide icon on hover */
-        .nav-link:hover img {
-            display: none;
+                .nav-link:hover img {
+            opacity: 0;
         }
 
         .nav-link:hover .link-text {
-            display: inline;
-        }
-
+            opacity: 1;
+}
         /* Optional hover color change */
         .nav-link:hover {
             color: black !important;
@@ -87,14 +83,28 @@
     }
 
     .nav-link {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        color: #fff !important;
-        margin: 0;  /* Remove existing margins */
-        text-decoration: none;
-        transition: color 0.3s ease-in-out;
-    }
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #fff !important;
+    margin: 0 15px;
+    text-decoration: none;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+    padding: 0.5rem 1rem;
+}
+
+.link-text {
+    display: block;
+    position: absolute;
+    opacity: 0;
+    color: black;
+    transition: opacity 0.3s ease-in-out;
+}
+
+
+
+
     </style>
 </head>
 <body>
@@ -102,18 +112,23 @@
     <div class="container main-container">
         <!-- Sticky Navbar -->
         <nav class="navbar navbar-dark navbar-sticky d-flex justify-content-center">
+
+            <a class="navbar-brand me-5" href="/">
+                <!-- STAVI NEKI LOGO POSLIJE -->
+            </a>
             <a class="nav-link" href="#">
-                <!-- DODAJ IMG SVG OVDJE WIDTH 30 HEIGHT 30 -->
-                <span class="link-text">Računi</span>
+                <img src="{% static 'base/svgs/penguin_base.svg' %}" alt="Profile" width="50" height="50">
+                <span class="link-text">Profile</span>
             </a>
 
             <a class="nav-link" href="#">
-                <!-- DODAJ IMG SVG OVDJE WIDTH 30 HEIGHT 30 -->
-                <span class="link-text">Komunikacija</span>
+
+                   <img src="{% static 'base/svgs/car.svg' %}" alt="Rides" width="50" height="50">
+                <span class="link-text">Rides</span>
             </a>
             <a class="nav-link" href="#">
-                <!-- DODAJ IMG SVG OVDJE WIDTH 30 HEIGHT 30 -->
-                <span class="link-text">Poslovi</span>
+                <img src="{% static 'base/svgs/messages.svg' %}" alt="Chat" width="50" height="50">
+                <span class="link-text">Chat</span>
             </a>
             <a class="nav-link" href="#">
                 <!-- DODAJ IMG SVG OVDJE WIDTH 30 HEIGHT 30 -->
