@@ -1,0 +1,6 @@
+Make the chat system
+Make a modal for making a new ride
+Figure out how to integrate Google API for maps
+Make rides show actual rides
+Make carbon footprint work, show how many penguins saved
+Make goal tracker work, functionally

@@ -108,7 +108,6 @@
     </style>
 </head>
 <body>
-    <H1>IM ON BASE</H1>
     <div class="container main-container">
         <!-- Sticky Navbar -->
         <nav class="navbar navbar-dark navbar-sticky d-flex justify-content-center">
@@ -116,12 +115,12 @@
             <a class="navbar-brand me-5" href="/">
                 <!-- STAVI NEKI LOGO POSLIJE -->
             </a>
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{% url 'user_profile:profile' %}">
                 <img src="{% static 'base/svgs/penguin_base.svg' %}" alt="Profile" width="50" height="50">
                 <span class="link-text">Profile</span>
             </a>
 
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{% url 'rides' %}">
 
                    <img src="{% static 'base/svgs/car.svg' %}" alt="Rides" width="50" height="50">
                 <span class="link-text">Rides</span>
@@ -130,10 +129,7 @@
                 <img src="{% static 'base/svgs/messages.svg' %}" alt="Chat" width="50" height="50">
                 <span class="link-text">Chat</span>
             </a>
-            <a class="nav-link" href="#">
-                <!-- DODAJ IMG SVG OVDJE WIDTH 30 HEIGHT 30 -->
-                <span class="link-text">Informacije</span>
-            </a>
+          
             <!-- PITAJ PREKO DJANGA DA LI JE USER AUTHENTICATED AKO JEST POKAZI OVO -->
           <div class="d-flex align-items-center">
               <!-- POKAZI USWERNAME USERA SALJI PREKO CONTEXTA -->

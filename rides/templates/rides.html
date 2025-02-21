@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <div class="ride-card shadow-sm">
+        <h6>Sunset City Ride</h6>
+        <p class="text-muted">📅 Jan 15, 2025 | 🚴 25 km | ⏳ 1h 20m</p>
+        <p><strong>Participants:</strong> 12 riders | <strong>Points Earned:</strong> 250 points</p>
+        <div class="map-container" id="map">
+            <img src="https://picsum.photos/200/300" alt="">
+        </div>
+    </div>
+
+</div>
+
+
+<style>
+
+.ride-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.map-container {
+    width: 100%;
+    height: 300px;
+    border-radius: 8px;
+}
+
+/* Optional: Additional styling for text elements */
+.ride-card h6 {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.ride-card p {
+    margin-bottom: 8px;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+}
+</style>
+
+
+{% endblock %}

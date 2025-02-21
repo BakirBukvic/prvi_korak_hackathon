@@ -1,6 +1,40 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+<style>
+
+.profile-card, .goal-card, .carbon-card, .activity-card, .leaderboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        .progress-bar {
+            height: 10px;
+        }
+        .ride-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+        }
+        .activity-list {
+            max-height: 200px;
+            overflow-y: scroll;
+        }
+</style>
     <!-- Hero Image Section -->
     <div class="hero-image"></div>
 
@@ -11,32 +45,38 @@
             <div class="col-md-4">
                 <div class="card user-card shadow-sm">
                     <div class="card-body">
-                        <img src="https://picsum.photos/200/300" alt="User Image">
-                        <h5 class="card-title mt-2">Nice to see you, !</h5>
-                        <p class="card-text">You have 53,375 points</p>
-                        <a href="#" class="btn btn-primary">View Profile</a>
+                        <img src="https://picsum.photos/200/300" alt="{{ user_profile.username }}'s Profile Image">
+                        <h5 class="card-title mt-2">Nice to see you, {{ user_profile.username }}!</h5>
+                        <p class="card-text">Level: {{ user_profile.level.name }}</p>
+                        <p class="card-text">Total Distance: {{ user_profile.km_passed }} km</p>
+                        <p class="card-text">Rides: {{ user_profile.number_of_rides }}</p>
+                        {% if user_profile.profile_description %}
+                            <p class="card-text">{{ user_profile.profile_description }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
+
+      
+        
             <!-- Right Column - Content Area -->
             <div class="col-md-8">
                 <!-- Add your right side content here -->
                 <div class="content-area">
-                    <h3>Your Activity</h3>
-                    <p>This space is ready for additional content.</p>
-                    <br>
-                    <p>This space is ready for additional content.</p>
-                    <br>
-                    <p>This space is ready for additional content.</p>
-                    <br>
-                    <p>This space is ready for additional content.</p>
-                    <br>
-                    <p>This space is ready for additional content.</p>
-                    <br>
-                    <p>This space is ready for additional content.</p>
-                    <br>
-                    <p>This space is ready for additional content.</p>
-                    <br>
+                    <div class="goal-card shadow-sm">
+                        <h5>Goal Tracker</h5>
+                        <p>🎯 <strong>100 km goal</strong> | <span class="text-primary">70 km completed</span></p>
+                        <div class="progress">
+                            <div class="progress-bar bg-success" style="width: 70%;"></div>
+                        </div>
+                        <p class="text-muted">30 km left to reach your goal!</p>
+                    </div>
+
+                    <div class="carbon-card shadow-sm">
+                        <h5>Carbon Footprint Summary</h5>
+                        <p><strong>Total CO2 saved:</strong> 120 kg</p>
+                        <p class="text-muted">🌍 Equivalent to planting 6 trees.</p>
+                    </div>
                     
                 </div>
             </div>
