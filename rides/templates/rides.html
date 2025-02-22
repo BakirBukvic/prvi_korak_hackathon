@@ -90,37 +90,158 @@ function initMaps() {
 
 <!-- Move the Google Maps API script here and add the callback -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=geometry&callback=initMaps" async defer></script>
-
 <style>
+    :root {
+        --baby-blue: #89CFF0;
+        --baby-blue-light: #B5E2FF;
+        --baby-blue-dark: #5B9BD5;
+    }
+
+    .container {
+        max-width: 1200px;
+        padding: 2rem;
+    }
+
     .ride-card {
-        background: white;
-        border-radius: 10px;
-        padding: 15px;
-        margin: 10px 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(145deg, #ffffff, #f8fbff);
+        border-radius: 20px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 10px 30px rgba(137, 207, 240, 0.15);
+        border: 1px solid rgba(137, 207, 240, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .ride-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(137, 207, 240, 0.2);
     }
 
     .map-container {
         width: 100%;
-        height: 300px;
-        border-radius: 8px;
+        height: 350px;
+        border-radius: 15px;
+        overflow: hidden;
+        margin: 20px 0;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 3px solid var(--baby-blue-light);
     }
 
-    .ride-card h6 {
-        margin-bottom: 10px;
-        font-weight: bold;
+    .btn-primary {
+        background: var(--baby-blue);
+        border: none;
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(137, 207, 240, 0.3);
     }
 
-    .ride-card p {
-        margin-bottom: 8px;
+    .btn-primary:hover {
+        background: var(--baby-blue-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(137, 207, 240, 0.4);
+    }
+
+    .btn-success {
+        background: #4CAF50;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 30px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-success:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+    }
+
+    .badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    .badge.bg-warning {
+        background-color: #FFD700 !important;
+        color: #000;
+    }
+
+    .badge.bg-primary {
+        background-color: var(--baby-blue) !important;
+        color: #fff;
+        font-size: 0.9rem;
     }
 
     .text-muted {
-        color: #6c757d !important;
+        color: #5a6268 !important;
+        font-size: 1.1rem;
+        font-weight: 500;
     }
 
-    .shadow-sm {
-        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+    .ride-card p {
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .ride-card strong {
+        color: var(--baby-blue-dark);
+    }
+
+    .alert-info {
+        background-color: var(--baby-blue-light);
+        border: none;
+        border-radius: 15px;
+        padding: 20px;
+        color: var(--baby-blue-dark);
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .bi {
+        margin-right: 8px;
+    }
+
+    hr {
+        border-color: var(--baby-blue-light);
+        margin: 20px 0;
+        opacity: 0.5;
+    }
+
+    /* Animation for cards */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ride-card {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--baby-blue);
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--baby-blue-dark);
     }
 </style>
 {% endblock %}

@@ -1,8 +1,10 @@
-{% extends 'base.html' %}
+
 {% load static %}
 
-{% block content %}
+
 <div class="container mt-4">
+
+   
     <!-- Future Rides Section -->
     <div class="mb-5">
         <h3>Upcoming Rides <i class="bi bi-calendar-event"></i></h3>
@@ -90,17 +92,10 @@
                             <small>{{ ride.start_date|date:"M d, Y H:i" }}</small>
                         </div>
                        
-                        <div class="dropdown">
-                            <button class="btn btn-link text-white" type="button" id="dropdownMenuPast{{ ride.id }}" 
-                                    data-bs-toggle="dropdown" aria-expanded="false"
-                                    style="text-decoration: none; font-weight: bold;">
-                                ...
+                        <div>
+                            <button class="btn btn-danger btn-sm delete-ride" data-ride-id="{{ ride.id }}">
+                                <i class="bi bi-trash"></i> Delete
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuPast{{ ride.id }}">
-                                <li><button class="dropdown-item text-danger delete-ride" data-ride-id="{{ ride.id }}">
-                                    <i class="bi bi-trash"></i> Delete Ride
-                                </button></li>
-                            </ul>
                         </div>
                     </div>
                     
@@ -112,14 +107,20 @@
                             </div>
                             <div class="col-md-6">
                                 <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
-                                    <p>
+                               
+                               
+                                <p>
                                     {% if ride.status == 'PREPARING' %}
                                         <i class="bi bi-hourglass-split text-warning"></i>
+                                    {% elif ride.status == 'CANCELED' %}
+                                        <i class="bi bi-x-circle-fill text-danger"></i>
                                     {% else %}
                                         <i class="bi bi-check-circle-fill text-success"></i>
                                     {% endif %}
                                     {{ ride.status }}
                                 </p>
+
+
                             </div>
                         </div>
 
@@ -246,4 +247,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 </script>
-{% endblock %}

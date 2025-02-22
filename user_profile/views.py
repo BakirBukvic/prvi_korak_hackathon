@@ -39,20 +39,54 @@ def get_random_penguin():
         # Return a default image name in case of any error
         return 'default_penguin.jpg'
 
-
 class UserProfileView(LoginRequiredMixin, DetailView):
     model = get_user_model()
     template_name = 'user_profile.html'
     context_object_name = 'user_profile'
 
-
-  
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.get_object()
+
+        # Add basic profile data
         context['penguins_saved'] = calculate_penguins_saved(user.km_passed)
         context['random_penguin'] = get_random_penguin()
+
+        # Add data for My Rides tab
+        now = timezone.now()
+        approved_applications = Prefetch(
+            'applications',
+            queryset=RideApplication.objects.filter(status='APPROVED').select_related('user'),
+            to_attr='approved_passengers'
+        )
+
+        user_rides = Ride.objects.filter(
+            riders__user=user,
+            riders__is_driver=True
+        ).annotate(
+            approved_count=Count('applications', filter=Q(applications__status='APPROVED')),
+            initial_travelers=F('travelers')
+        ).prefetch_related(approved_applications, 'riders__user')
+
+        context['future_rides'] = user_rides.filter(status='PREPARING').order_by('start_date')
+        context['past_rides'] = user_rides.filter(~Q(status='PREPARING')).order_by('-start_date')
+
+        # Add data for Pending Rides tab
+        user_rides_ids = UserRideAssociation.objects.filter(
+            user=user,
+            is_driver=True
+        ).values_list('ride', flat=True)
+
+        context['pending_applications'] = RideApplication.objects.filter(
+            ride__in=user_rides_ids,
+            status='PENDING'
+        ).select_related('user', 'ride')
+
+        # Add data for Sent Rides tab
+        context['ride_applications'] = RideApplication.objects.filter(
+            user=user
+        ).select_related('ride').order_by('-applied_at')
+
         return context
     
     def get_object(self, queryset=None):
@@ -139,7 +173,7 @@ def approve_application(request, application_id):
         else:
             messages.error(request, 'You do not have permission to approve this application.')
             
-    return redirect('user_profile:pending_rides')
+    return redirect('user_profile')
 @login_required
 def reject_application(request, application_id):
     if request.method == 'POST':

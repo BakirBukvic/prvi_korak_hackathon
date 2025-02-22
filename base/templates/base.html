@@ -19,230 +19,174 @@
 
 
           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <style>
-/* Update the penguin-container class */
-.penguin-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px 0;
-    position: static; /* Changed from fixed to static */
-    width: 100%;
-    background-color: #ffffff; /* Optional: add background color if needed */
-}
-
-/* Update the main-container class */
-.main-container {
-    margin-top: 20px; /* Reduce margin since penguin is not fixed anymore */
-}
-
-
-        body {
-            background-color: #ffffff;
-            min-height: 100vh;
-            padding: 10px;
-        }
-   
-        /* Navbar Styles */
-        .navbar-sticky {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            transition: all 0.3s ease-in-out;
-            border-bottom: 2px solid white;
-        }
-   
-        .navbar-scrolled {
-            background-color: #dddddd !important;
-        }
-   
-        .navbar {
-            width: 100%;
-            display: flex;
-            flex-wrap: nowrap;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem 0;
-        }
-   
-        /* Navigation Links */
-        .nav-link {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            color: #333 !important;
-            margin: 0 15px;
-            text-decoration: none;
-            transition: all 0.3s ease-in-out;
-            position: relative;
-            padding: 0.5rem 1rem;
-        }
-   
-        .nav-link img {
-            display: block;
-            transition: opacity 0.3s ease-in-out;
-        }
-   
-        /* Link Text & Hover Effects */
-        .link-text {
-            display: block;
-            position: absolute;
-            opacity: 0;
-            color: black;
-            transition: opacity 0.3s ease-in-out;
-            margin-left: 8px;
-        }
-   
-        .nav-link:hover img {
-            opacity: 0;
-        }
-   
-        .nav-link:hover .link-text {
-            opacity: 1;
-            transform: translateY(0);
-        }
-   
-        /* Dropdown Specific Styles */
-        .dropdown-menu {
-            min-width: 200px;
-            padding: 0.5rem 0;
-            margin: 0.125rem 0 0;
-            background-color: #ffffff;
-            border: none;
-            border-radius: 0.5rem;
-            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-            animation: dropdownFade 0.3s ease-in-out;
-        }
-   
-        @keyframes dropdownFade {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
+          <style>
+            :root {
+                --primary-blue: #89CFF0;
+                --secondary-blue: #B5E2FF;
+                --dark-blue: #5B9BD5;
+                --accent-blue: #4FB3E8;
+                --background: #F0F7FF;
+                --text-dark: #2C3E50;
+                --shadow-color: rgba(137, 207, 240, 0.2);
             }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+        
+            body {
+                background: linear-gradient(135deg, var(--background) 0%, #FFFFFF 100%);
+                min-height: 100vh;
+                padding: 0;
+                font-family: 'Poppins', sans-serif;
             }
-        }
-   
-        .dropdown-item {
-            padding: 0.7rem 1.5rem;
-            color: #333;
-            transition: all 0.2s ease;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-        }
-   
-        .dropdown-item:hover {
-            background-color: #f8f9fa;
-            transform: translateX(5px);
-            color: #000;
-        }
-   
-        .dropdown-divider {
-            margin: 0.5rem 0;
-            border-top: 1px solid #eee;
-        }
-   
-        /* Ensure dropdown toggle keeps image visible */
-        .dropdown-toggle:hover img {
-            opacity: 1 !important;
-        }
-   
-        /* Make username visible in dropdown toggle */
-        .dropdown-toggle .link-text {
-            position: relative !important;
-            opacity: 1 !important;
-            margin-left: 10px;
-        }
-   
-        /* Navbar Items Spacing */
-        .navbar-nav {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            margin: 0;
-            padding: 0;
-        }
-   
-        /* Show dropdown on hover */
-        .nav-item.dropdown:hover .dropdown-menu {
-            display: block;
-        }
-   
-        /* Additional hover effects */
-        .nav-link:hover {
-            transform: translateY(-2px);
-        }
-   
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-   
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0.5rem 0;
+        
+            /* Navbar Styling */
+            .navbar-sticky {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                padding: 1rem 2rem;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 2px 20px var(--shadow-color);
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             }
-           
+        
+            .navbar-scrolled {
+                padding: 0.7rem 2rem;
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 4px 30px rgba(91, 155, 213, 0.15);
+            }
+        
             .nav-link {
-                margin: 0 10px;
+                position: relative;
+                margin: 0 1.5rem;
+                padding: 0.5rem 1rem;
+                color: var(--text-dark) !important;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                border-radius: 12px;
+                background: transparent;
             }
-           
+        
+            .nav-link:before {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 0;
+                width: 100%;
+                height: 2px;
+                background: linear-gradient(90deg, var(--primary-blue), var(--accent-blue));
+                transform: scaleX(0);
+                transform-origin: right;
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+        
+            .nav-link:hover {
+                transform: translateY(-2px);
+                background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(137, 207, 240, 0.1));
+                box-shadow: 0 4px 15px var(--shadow-color);
+            }
+        
+            .nav-link:hover:before {
+                transform: scaleX(1);
+                transform-origin: left;
+            }
+        
+            .nav-link img {
+                transform: scale(1);
+                transition: all 0.3s ease;
+            }
+        
+            .nav-link:hover img {
+                transform: scale(1.1) rotate(-5deg);
+            }
+        
+            /* Dropdown Styling */
             .dropdown-menu {
-                min-width: 160px;
+                border: none;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                box-shadow: 0 10px 30px rgba(91, 155, 213, 0.15);
+                border-radius: 15px;
+                padding: 1rem 0;
+                margin-top: 1rem;
+                transform: translateY(10px);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
-        }
-        .link-text {
-    display: block;
-    position: absolute;
-    opacity: 0;
-    color: black;
-    transition: opacity 0.3s ease-in-out;
-}
-
-
-/* Edited by Mirza*/
-.logo-container {
-        position: relative;
-        width: 150px; /* Match the penguin image width */
-        height: 200px; /* Match the penguin image height */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-   
-        /* Added class for eye elements to control their position */
-        .eye {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            transition: transform 0.1s ease-out; /* Added smooth transition for eye movement */
-        }
-        /* Adjusted eye positioning */
-        #eye1 {
-            left: 60px;  /* Adjusted left position */
-            top: 70px;   /* Adjusted top position */
-        }
-
-
-        #eye2 {
-            left: 84px;  /* Adjusted left position */
-            top: 70px;   /* Adjusted top position */
-        }
-
-
-    </style>
+        
+            .dropdown:hover .dropdown-menu {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+        
+            .dropdown-item {
+                padding: 0.8rem 1.5rem;
+                color: var(--text-dark);
+                font-weight: 500;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+        
+            .dropdown-item:hover {
+                background: linear-gradient(90deg, rgba(137, 207, 240, 0.1), rgba(137, 207, 240, 0.2));
+                color: var(--accent-blue);
+                transform: translateX(5px);
+            }
+        
+            /* Username Display */
+            .dropdown-toggle .link-text {
+                font-weight: 600;
+                background: linear-gradient(90deg, var(--dark-blue), var(--accent-blue));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                opacity: 1 !important;
+            }
+        
+            /* Main Container Adjustment */
+            .main-container {
+                margin-top: 100px;
+                padding: 0 2rem;
+            }
+        
+            /* Messages Container */
+            .messages-container {
+                position: fixed;
+                top: 90px;
+                right: 20px;
+                z-index: 1001;
+                min-width: 300px;
+                max-width: 400px;
+            }
+        
+            .alert {
+                border: none;
+                border-radius: 12px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                backdrop-filter: blur(10px);
+                animation: slideIn 0.5s ease forwards;
+            }
+        
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+        </style>
 </head>
 <body>
     <div class="container main-container">
         <!-- Sticky Navbar -->
         <nav class="navbar navbar-dark navbar-sticky d-flex justify-content-center">
-
+            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
            
             <a class="nav-link" href="{% url 'user_profile:profile' %}">
@@ -308,11 +252,14 @@
 </body>
 
 
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const navbar = document.querySelector('.navbar');
         const eye1 = document.getElementById("eye1");
         const eye2 = document.getElementById("eye2");
+        const penguinImage = document.querySelector('.logo-container img'); // Updated 1
        
         window.addEventListener('scroll', function() {
             if (window.scrollY > 0) {
@@ -328,22 +275,39 @@
                 let centerY = rect.top + rect.height / 2;
 
 
+
+
                 let dx = event.clientX - centerX;
                 let dy = event.clientY - centerY;
                 let angle = Math.atan2(dy, dx);
                 let distance = Math.min(3, Math.hypot(dx, dy) / 100);
 
 
+
+
                 let eyeOffsetX = Math.cos(angle) * distance;
                 let eyeOffsetY = Math.sin(angle) * distance;
+
+
 
 
                 // Updated: Move the eyes using the 'transform' property
                 eye1.style.transform = `translate(${eyeOffsetX}px, ${eyeOffsetY}px)`;
                 eye2.style.transform = `translate(${eyeOffsetX}px, ${eyeOffsetY}px)`;
             });
+            document.addEventListener('click', function() {
+                eye1.style.display = 'none';
+                eye2.style.display = 'none';
+            penguinImage.src = "{% static 'base/penguin_images/happy.svg' %}"; // 2
+            setTimeout(function() {
+            penguinImage.src = "{% static 'base/penguin_images/penguin.svg' %}"; // Revert back to original penguin
+            eye1.style.display = 'block'; // Show eye1
+            eye2.style.display = 'block';
+        }, 50);
+            });
     });
 </script>
+
 
 
 </html>
