@@ -169,7 +169,7 @@ def approve_application(request, application_id):
             messages.success(request, f'Application for {application.user.username} has been approved.')
         else:
             messages.error(request, 'You do not have permission to approve this application.')
-    return redirect('user_profile')
+    return redirect('user_profile:profile')
 
 def reject_application(request, application_id):
     if request.method == 'POST':
@@ -185,7 +185,7 @@ def reject_application(request, application_id):
             messages.success(request, f'Application for {application.user.username} has been rejected.')
         else:
             messages.error(request, 'You do not have permission to reject this application.')
-    return redirect('user_profile:pending_rides')
+    return redirect('user_profile')
 
 
 def rides(request):
