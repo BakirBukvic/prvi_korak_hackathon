@@ -51,7 +51,6 @@ class Ride(models.Model):
     duration = models.DurationField(null=True, blank=True)  
     created_on = models.DateTimeField(default=timezone.now)  # Changed from auto_now_add
     start_date = models.DateTimeField(default=timezone.now)
-    arriving_date = models.DateTimeField(default=timezone.now)
 
     origin_place_id = models.CharField(max_length=255, null=True)
     origin_latitude = models.FloatField(default=0)
@@ -78,3 +77,27 @@ class UserRideAssociation(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.ride.start} to {self.ride.end}"
+    
+
+class RideApplication(models.Model):
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ride_applications')
+    ride = models.ForeignKey(Ride, on_delete=models.CASCADE, related_name='applications')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    applied_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    message = models.TextField(blank=True, null=True)  # Optional message from applicant
+
+    class Meta:
+        unique_together = ('user', 'ride')  # Prevent duplicate applications
+        ordering = ['-applied_at']
+        verbose_name = 'Ride Application'
+        verbose_name_plural = 'Ride Applications'
+
+    def __str__(self):
+        return f"{self.user.username}'s application for {self.ride.start} to {self.ride.end}"

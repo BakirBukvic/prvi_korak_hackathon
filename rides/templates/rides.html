@@ -68,6 +68,11 @@ function initMaps() {
     <div class="ride-card shadow-sm">
         <p class="text-muted">📅 {{ ride.start_date }} | 🚗 {{ ride.distance }} km | ⏳ {{ ride.duration }}</p>
         <p><strong>Available seats:</strong> {{ ride.travelers }}</p>
+        <span class="badge bg-primary">
+            <i class="bi bi-people-fill"></i> {{ ride.applicant_count }} Applicants
+           
+        </span>
+        <hr>
         <div class="map-container" id="map-{{ ride.id }}"></div>
         <a href="{% url 'apply_for_ride' ride.id %}" class="btn btn-success my-3">Save the Earth</a>
     </div>

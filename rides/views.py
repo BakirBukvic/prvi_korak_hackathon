@@ -2,32 +2,37 @@ from django.shortcuts import render, redirect
 from django.views.generic import ListView
 from base.models import Ride
 from django.views.generic import CreateView
-
+from django.db.models import Count
 from django.views.generic import ListView
 from django.views.generic import CreateView
 from django.utils import timezone
 from django.http import JsonResponse
 from datetime import timedelta
 import re
-from django.urls import reverse
 
+from django.db.models import Count, Q
+from django.urls import reverse
 class RideListView(ListView):
     model = Ride
     template_name = 'rides.html'
     context_object_name = 'rides'
 
     def get_queryset(self):
-        # Remove select_related since the fields are now part of Ride model
-        return Ride.objects.all().order_by('-created_on')
-
+        # Annotate each ride with applicant count
+        return Ride.objects.annotate(
+            applicant_count=Count('applications'),
+            pending_count=Count('applications', filter=Q(applications__status='PENDING')),
+            approved_count=Count('applications', filter=Q(applications__status='APPROVED'))
+        ).order_by('-created_on')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Add debug information to help track data
-
-
+        
+        # Add application stats for each ride
         for ride in context['rides']:
-            print(f"Ride {ride.id}: Has route_details: {hasattr(ride, 'route_details')}")
+            print(f"Ride {ride.id}: {ride.applicant_count} applicants "
+                  f"({ride.pending_count} pending, {ride.approved_count} approved)")
+            
         return context
 
 class MakeRideView(CreateView):
@@ -50,7 +55,6 @@ def create_ride_from_post_data(post_data):
         travelers=post_data.get('travelers'),
         created_on=timezone.now(),
         start_date=timezone.now(),
-        arriving_date=timezone.now(),
         origin_place_id=post_data.get('origin_place_id'),
         origin_latitude=float(post_data.get('origin_latitude')),
         origin_longitude=float(post_data.get('origin_longitude')),
@@ -110,6 +114,8 @@ def submitRide(request):
 from django.views.generic import DetailView
 
 
+from django.views.generic import DetailView
+from django.db.models import Count, Q
 
 class ApplyForRideView(DetailView):
     model = Ride
@@ -117,23 +123,64 @@ class ApplyForRideView(DetailView):
     context_object_name = 'ride'
     pk_url_kwarg = 'ride_id'
 
+    def get_object(self):
+        # Get the ride and annotate with application counts
+        return Ride.objects.annotate(
+            applicant_count=Count('applications'),
+            pending_count=Count('applications', filter=Q(applications__status='PENDING')),
+            approved_count=Count('applications', filter=Q(applications__status='APPROVED'))
+        ).get(pk=self.kwargs['ride_id'])
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         ride = self.get_object()
         
-        # Add debugging prints
+        # Debug prints to verify counts
         print(f"DEBUG: Ride ID: {ride.id}")
-        print(f"DEBUG: All riders: {ride.riders.all().count()} riders found")
-        print(f"DEBUG: Driver associations: {ride.riders.filter(is_driver=True).count()} drivers found")
+        print(f"DEBUG: Applicant count: {ride.applicant_count}")
+        print(f"DEBUG: Pending count: {ride.pending_count}")
+        print(f"DEBUG: Approved count: {ride.approved_count}")
         
+        # Get driver info
         driver_association = ride.riders.filter(is_driver=True).first()
-        
         if driver_association:
             context['driver'] = driver_association.user
-            print(f"DEBUG: Driver found: {context['driver'].username}")
         else:
-            print("DEBUG: No driver association found!")
-            # Set a default driver or handle the case when no driver is found
             context['driver'] = None
             
         return context
+    
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
+
+
+@login_required
+def join_ride(request, ride_id):
+    if request.method == 'POST':
+        try:
+            ride = get_object_or_404(Ride, id=ride_id)
+            
+            # Check if user is already in the ride
+            if UserRideAssociation.objects.filter(user=request.user, ride=ride).exists():
+                return JsonResponse({'success': False, 'error': 'You are already part of this ride'})
+            
+            # Check if there are available seats
+            current_riders = UserRideAssociation.objects.filter(ride=ride).count()
+            if current_riders >= ride.travelers:
+                return JsonResponse({'success': False, 'error': 'No available seats'})
+            
+            # Create association
+            UserRideAssociation.objects.create(
+                user=request.user,
+                ride=ride,
+                is_driver=False
+            )
+            
+            return JsonResponse({'success': True})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

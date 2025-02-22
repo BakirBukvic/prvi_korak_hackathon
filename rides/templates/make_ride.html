@@ -21,6 +21,32 @@ Copy
             <input type="text" id="destinationSearch" name="destination" class="form-control" placeholder="Start typing destination city..." required>
             <div class="invalid-feedback">Please select a destination from the dropdown.</div>
         </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="start_date">Departure Date:</label>
+                    <input type="date" 
+                           id="start_date" 
+                           name="start_date" 
+                           class="form-control"
+                           min="{% now 'Y-m-d' %}"
+                           required>
+                    <div class="invalid-feedback">Please select a valid departure date.</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="start_time">Departure Time:</label>
+                    <input type="time" 
+                           id="start_time" 
+                           name="start_time" 
+                           class="form-control"
+                           required>
+                    <div class="invalid-feedback">Please select a valid departure time.</div>
+                </div>
+            </div>
+        </div>
         <hr>
         <input type="number" 
            id="travelers" 
