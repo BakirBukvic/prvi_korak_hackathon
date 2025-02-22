@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Create a New Ride</h1>
+    
+    <form method="POST" action="/your-submission-endpoint">
+        <div class="form-group">
+            <label for="citySearch">Enter City:</label>
+            <input type="text" id="citySearch" name="city" class="form-control" placeholder="Start typing city name..." required>
+            <div class="invalid-feedback">Please select a city from the dropdown.</div>
+        </div>
+
+        <!-- Hidden inputs to store the selected place data -->
+        <input type="hidden" id="selectedPlaceId" name="place_id">
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+
+        <button type="submit" class="btn btn-primary mt-3">Create Ride</button>
+    </form>
+</div>
+
+<!-- Add Google Maps API with Places Library -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=places&callback=initAutocomplete" async defer></script>
+
+<script>
+    function initAutocomplete() {
+        const input = document.getElementById('citySearch');
+        const options = {
+            types: ['(cities)'],
+            fields: ['place_id', 'name', 'geometry']
+        };
+
+        const autocomplete = new google.maps.places.Autocomplete(input, options);
+
+        autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            
+            if (!place.geometry) {
+                // Show error message
+                input.classList.add('is-invalid');
+                return;
+            }
+
+            // Clear any previous errors
+            input.classList.remove('is-invalid');
+            
+            // Update hidden inputs
+            document.getElementById('selectedPlaceId').value = place.place_id;
+            document.getElementById('latitude').value = place.geometry.location.lat();
+            document.getElementById('longitude').value = place.geometry.location.lng();
+        });
+
+        // Prevent form submission when pressing enter in the city field
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+    }
+</script>
+{% endblock %}

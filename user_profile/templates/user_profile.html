@@ -2,6 +2,8 @@
 {% load static %}  <!-- Add this line -->
 {% block content %}
 
+
+
 <style>
 
 .profile-card, .goal-card, .carbon-card, .activity-card, .leaderboard-card {
@@ -89,11 +91,11 @@
 
     <style>
         .hero-image {
-            background: url('https://picsum.photos/1920/600') center center/cover no-repeat;
-            height: 300px;  /* Reduced height */
-            width: 100%;
-            margin-bottom: 120px;  /* Added margin to create space for card */
-        }
+        background: url("{% static 'base/penguin_images/'|add:random_penguin %}") center center/cover no-repeat;
+        height: 300px;
+        width: 100%;
+        margin-bottom: 120px;
+    }
 
         .user-card {
             margin-top: -100px;
