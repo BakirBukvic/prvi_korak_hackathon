@@ -161,37 +161,37 @@ def reject_application(request, application_id):
             
     return redirect('user_profile:pending_rides')
 
+from django.db.models import Count, Q, F, Prefetch
 
 @login_required
 def rides(request):
     now = timezone.now()
     user = request.user
 
-    # Get rides where user is the driver
+    # Prefetch approved applications and their users
+    approved_applications = Prefetch(
+        'applications',
+        queryset=RideApplication.objects.filter(status='APPROVED').select_related('user'),
+        to_attr='approved_passengers'
+    )
+
     user_rides = Ride.objects.filter(
         riders__user=user,
         riders__is_driver=True
     ).annotate(
-        approved_count=Count('riders', filter=Q(riders__is_driver=False)),
+        approved_count=Count('applications', filter=Q(applications__status='APPROVED')),
         initial_travelers=F('travelers')
-    ).prefetch_related('riders__user')
+    ).prefetch_related(approved_applications, 'riders__user')
 
-    # Future rides: Either future date OR 'PREPARING' status
-    future_rides = user_rides.filter(
-        status='PREPARING'
-    ).order_by('start_date')
-    
-    # Past rides: Only include rides with 'FINISHED' status
-    past_rides = user_rides.filter(
-        ~Q(status='PREPARING')  # Using ~ to negate the condition
-    ).order_by('-start_date')
+    # Future and past rides logic remains the same
+    future_rides = user_rides.filter(status='PREPARING').order_by('start_date')
+    past_rides = user_rides.filter(~Q(status='PREPARING')).order_by('-start_date')
 
     context = {
         'future_rides': future_rides,
         'past_rides': past_rides,
         'user': user
     }
-    
     return render(request, 'my_rides.html', context)
     
 @login_required

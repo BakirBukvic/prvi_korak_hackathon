@@ -9,10 +9,6 @@
         {% if future_rides %}
             {% for ride in future_rides %}
             <div class="card mb-4 shadow-sm">
-
-               
-
-                
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div>
                         <h5 class="mb-0">
@@ -29,65 +25,49 @@
                         </button>
                     </div>
                 </div>
-
-
-
-
-
-
-        
-
-                
-                    <div class="card-body">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <p><i class="bi bi-people-fill"></i> Approved Passengers: {{ ride.approved_count }}/{{ ride.initial_travelers }}</p>
-                                <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
-                                <p><i class="bi bi-hourglass-split"></i> Status: Active</p>
-                            </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><i class="bi bi-people-fill"></i> Approved Passengers: {{ ride.approved_count }}/{{ ride.initial_travelers }}</p>
+                            <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
                         </div>
-                        
-
-                        {% if ride.riders.exists %}
-                        <h6>Passengers:</h6>
-                        <div class="list-group">
-                            {% for association in ride.riders.all %}
-                                {% if association.user != request.user %}
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center">
-                                            {% if association.user.path_to_profile_picture %}
-                                                <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
-                                                     class="rounded-circle me-2" 
-                                                     width="40" 
-                                                     height="40" 
-                                                     alt="Profile photo">
-                                            {% endif %}
-                                            <div>
-                                                <h6 class="mb-0">{{ association.user.username }}</h6>
-                                                <small class="text-muted">
-                                                    {% if association.is_driver %}Driver{% else %}Passenger{% endif %}
-                                                </small>
-                                            </div>
-                                        </div>
-                                        {% if not association.is_driver %}
-                                            <button class="btn btn-danger btn-sm remove-passenger" 
-                                                    data-user-id="{{ association.user.id }}"
-                                                    data-ride-id="{{ ride.id }}">
-                                                <i class="bi bi-x-lg"></i> Remove
-                                            </button>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                        <div class="col-md-6">
+                            <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
+                            <p><i class="bi bi-hourglass-split"></i> Status: Active</p>
                         </div>
-                        {% else %}
-                            <p class="text-muted">No passengers yet</p>
-                        {% endif %}
                     </div>
+                    
+                    <h6>Passengers:</h6>
+    {% if ride.approved_count > 0 %}
+        <div class="list-group">
+            {% for application in ride.approved_passengers %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        {% if application.user.path_to_profile_picture %}
+                            <img src="{% static 'base/profile_pictures/'|add:application.user.path_to_profile_picture %}" 
+                                 class="rounded-circle me-2" 
+                                 width="40" 
+                                 height="40" 
+                                 alt="Profile photo">
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ application.user.username }}</h6>
+                            <small class="text-muted">Passenger</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger btn-sm remove-passenger" 
+                            data-user-id="{{ application.user.id }}"
+                            data-ride-id="{{ ride.id }}">
+                        <i class="bi bi-x-lg"></i> Remove
+                    </button>
                 </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-muted">No passengers yet</p>
+    {% endif %}
+</div>
+            </div>
             {% endfor %}
         {% else %}
             <div class="alert alert-info">
@@ -127,11 +107,7 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <p><i class="bi bi-people-fill"></i> Final Passengers: 
-                                    {% with approved_count=ride.riders.filter.count %}
-                                        {{ ride.riders.filter.count|default:"0" }}
-                                    {% endwith %}
-                                </p>
+                                <p><i class="bi bi-people-fill"></i> Final Passengers: {{ ride.approved_count }}</p>
                                 <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
                             </div>
                             <div class="col-md-6">
@@ -147,29 +123,33 @@
                             </div>
                         </div>
 
-                        {% if ride.riders.exists %}
+                        {% if ride.approved_count > 0 %}
                         <h6>Passengers:</h6>
                         <div class="list-group">
                             {% for association in ride.riders.all %}
-                                <div class="list-group-item">
-                                    <div class="d-flex align-items-center">
-                                        {% if association.user.path_to_profile_picture %}
-                                            <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
-                                                 class="rounded-circle me-2" 
-                                                 width="40" 
-                                                 height="40" 
-                                                 alt="Profile photo">
-                                        {% endif %}
-                                        <div>
-                                            <h6 class="mb-0">{{ association.user.username }}</h6>
-                                            <small class="text-muted">
-                                                {% if association.is_driver %}Driver{% else %}Passenger{% endif %}
-                                            </small>
+                                {% if not association.is_driver %}
+                                    <div class="list-group-item">
+                                        <div class="d-flex align-items-center">
+                                            {% if association.user.path_to_profile_picture %}
+                                                <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="40" 
+                                                     height="40" 
+                                                     alt="Profile photo">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ association.user.username }}</h6>
+                                                <small class="text-muted">
+                                                    Passenger
+                                                </small>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
+                        {% else %}
+                            <p class="text-muted">No passengers</p>
                         {% endif %}
                     </div>
                 </div>
@@ -181,7 +161,6 @@
         {% endif %}
     </div>
 </div>
-
 <!-- Bootstrap Icons -->
 
 
