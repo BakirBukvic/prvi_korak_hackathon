@@ -162,7 +162,6 @@ def reject_application(request, application_id):
     return redirect('user_profile:pending_rides')
 
 
-
 @login_required
 def rides(request):
     now = timezone.now()
@@ -177,14 +176,14 @@ def rides(request):
         initial_travelers=F('travelers')
     ).prefetch_related('riders__user')
 
-    # Split into future and past rides
+    # Future rides: Either future date OR 'PREPARING' status
     future_rides = user_rides.filter(
-        Q(start_date__gt=now) | Q(status='PREPARING')  # Add status condition here
+        Q(start_date__gt=now) | Q(status='PREPARING')
     ).order_by('start_date')
     
+    # Past rides: Only include rides with 'FINISHED' status
     past_rides = user_rides.filter(
-        start_date__lte=now,
-        status='FINISHED'  # Only show finished rides in past rides
+        status='FINISHED'  # Remove the start_date condition
     ).order_by('-start_date')
 
     context = {
