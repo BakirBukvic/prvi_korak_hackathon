@@ -4,9 +4,9 @@
 <div class="container mt-4">
     <h1 class="mb-4">Create a New Ride</h1>
     
-    <form method="POST" action="/your-submission-endpoint">
+    <form id="rideForm">
         <div class="form-group">
-            <label for="citySearch">Enter City:</label>
+            <label for="citySearch">Enter Destination City:</label>
             <input type="text" id="citySearch" name="city" class="form-control" placeholder="Start typing city name..." required>
             <div class="invalid-feedback">Please select a city from the dropdown.</div>
         </div>
@@ -16,14 +16,38 @@
         <input type="hidden" id="latitude" name="latitude">
         <input type="hidden" id="longitude" name="longitude">
 
-        <button type="submit" class="btn btn-primary mt-3">Create Ride</button>
+        <button type="button" class="btn btn-primary mt-3" onclick="showRoute()">Show Route</button>
     </form>
+
+    <div id="routeOptions" class="mt-3" style="display: none;">
+        <h4>Available Routes:</h4>
+        <div id="routesList" class="list-group"></div>
+    </div>
+
+    <div id="routeDetails" class="mt-3" style="display: none;">
+        <h4>Route Information:</h4>
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Distance:</strong> <span id="distance"></span></p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Estimated Time:</strong> <span id="duration"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map container -->
+    <div id="map" style="height: 500px; width: 100%; margin-top: 20px;"></div>
 </div>
 
-<!-- Add Google Maps API with Places Library -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=places&callback=initAutocomplete" async defer></script>
+<!-- Add Google Maps API with Places and Directions libraries -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=places,directions&callback=initAutocomplete" async defer></script>
 
 <script>
+    let map;
+    let directionsService;
+    let directionsRenderer;
+
     function initAutocomplete() {
         const input = document.getElementById('citySearch');
         const options = {
@@ -37,24 +61,117 @@
             const place = autocomplete.getPlace();
             
             if (!place.geometry) {
-                // Show error message
                 input.classList.add('is-invalid');
                 return;
             }
 
-            // Clear any previous errors
             input.classList.remove('is-invalid');
-            
-            // Update hidden inputs
             document.getElementById('selectedPlaceId').value = place.place_id;
             document.getElementById('latitude').value = place.geometry.location.lat();
             document.getElementById('longitude').value = place.geometry.location.lng();
         });
 
-        // Prevent form submission when pressing enter in the city field
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') e.preventDefault();
+        // Initialize map
+        const sarajevo = { lat: 43.8563, lng: 18.4131 };
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 12,
+            center: sarajevo
         });
+
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer();
+        directionsRenderer.setMap(map);
     }
+
+    function showRoute() {
+    const destinationLat = parseFloat(document.getElementById('latitude').value);
+    const destinationLng = parseFloat(document.getElementById('longitude').value);
+    
+    if (!destinationLat || !destinationLng) {
+        document.getElementById('citySearch').classList.add('is-invalid');
+        return;
+    }
+
+    const sarajevo = { lat: 43.8563, lng: 18.4131 };
+    const destination = { lat: destinationLat, lng: destinationLng };
+
+    const request = {
+        origin: sarajevo,
+        destination: destination,
+        travelMode: 'DRIVING',
+        provideRouteAlternatives: true, // Enable multiple routes
+        unitSystem: google.maps.UnitSystem.METRIC
+    };
+
+    directionsService.route(request, (result, status) => {
+        const detailsDiv = document.getElementById('routeDetails');
+        const optionsDiv = document.getElementById('routeOptions');
+        const routesList = document.getElementById('routesList');
+        
+        routesList.innerHTML = ''; // Clear previous options
+
+        if (status === 'OK') {
+            // Show all route options
+            result.routes.forEach((route, index) => {
+                const leg = route.legs[0];
+                
+                // Create route option button
+                const routeOption = document.createElement('button');
+                routeOption.className = 'list-group-item list-group-item-action';
+                routeOption.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span>Route ${index + 1}</span>
+                        <span>${leg.distance.text} • ${leg.duration.text}</span>
+                    </div>
+                    <small>${route.summary}</small>
+                `;
+                
+                // Add click handler
+                routeOption.addEventListener('click', () => {
+                    // Remove active class from all options
+                    document.querySelectorAll('#routesList button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Set selected route
+                    routeOption.classList.add('active');
+                    directionsRenderer.setDirections(result);
+                    directionsRenderer.setRouteIndex(index);
+                    
+                    // Update main details
+                    document.getElementById('distance').textContent = leg.distance.text;
+                    document.getElementById('duration').textContent = leg.duration.text;
+                });
+
+                routesList.appendChild(routeOption);
+            });
+
+            // Show first route by default
+            directionsRenderer.setDirections(result);
+            const firstLeg = result.routes[0].legs[0];
+            document.getElementById('distance').textContent = firstLeg.distance.text;
+            document.getElementById('duration').textContent = firstLeg.duration.text;
+            
+            // Select first option
+            routesList.firstChild.click();
+            
+            // Show containers
+            detailsDiv.style.display = 'block';
+            optionsDiv.style.display = 'block';
+        } else {
+            detailsDiv.style.display = 'none';
+            optionsDiv.style.display = 'none';
+            alert('Could not calculate routes: ' + status);
+        }
+    });
+}
 </script>
+
+<style>
+    /* Optional: Add some styling for the map container */
+    #map {
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+</style>
 {% endblock %}
