@@ -96,7 +96,14 @@
                             </div>
                             <div class="col-md-6">
                                 <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
-                                <p><i class="bi bi-check-circle-fill text-success"></i> Completed</p>
+                                    <p>
+                                    {% if ride.status == 'PREPARING' %}
+                                        <i class="bi bi-hourglass-split text-warning"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                    {% endif %}
+                                    {{ ride.status }}
+                                </p>
                             </div>
                         </div>
 

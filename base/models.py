@@ -51,6 +51,15 @@ class Ride(models.Model):
     duration = models.DurationField(null=True, blank=True)  
     created_on = models.DateTimeField(default=timezone.now)  # Changed from auto_now_add
     start_date = models.DateTimeField(default=timezone.now)
+    STATUS_CHOICES = [
+        ('PREPARING', 'Preparing'),
+        ('FINISHED', 'Finished'),
+    ]
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='PREPARING'
+    )
 
     origin_place_id = models.CharField(max_length=255, null=True)
     origin_latitude = models.FloatField(default=0)

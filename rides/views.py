@@ -18,8 +18,10 @@ class RideListView(ListView):
     context_object_name = 'rides'
 
     def get_queryset(self):
-        # Annotate each ride with applicant count
-        return Ride.objects.annotate(
+        # Only get rides with status 'PREPARING'
+        return Ride.objects.filter(
+            status='PREPARING'
+        ).annotate(
             applicant_count=Count('applications'),
             pending_count=Count('applications', filter=Q(applications__status='PENDING')),
             approved_count=Count('applications', filter=Q(applications__status='APPROVED'))
@@ -27,12 +29,9 @@ class RideListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Add application stats for each ride
         for ride in context['rides']:
             print(f"Ride {ride.id}: {ride.applicant_count} applicants "
                   f"({ride.pending_count} pending, {ride.approved_count} approved)")
-            
         return context
 
 class MakeRideView(CreateView):

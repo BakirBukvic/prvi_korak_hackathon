@@ -184,7 +184,7 @@ def rides(request):
         'user': user
     }
     
-    return render(request, 'rides.html', context)
+    return render(request, 'my_rides.html', context)
     
 @login_required
 def remove_passenger(request, ride_id, user_id):
