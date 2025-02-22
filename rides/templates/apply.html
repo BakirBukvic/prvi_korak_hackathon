@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card shadow">
+        <!-- Card Header with Driver Info -->
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h3 class="mb-0">Ride Details</h3>
+            <div class="d-flex align-items-center">
+                <img src="{% static 'base/profile_pictures/'|add:driver.path_to_profile_picture|default:'base/profile_pictures/default_avatar.png' %}" 
+                class="rounded-circle me-2" 
+                width="40" 
+                height="40" 
+                alt="Driver photo">
+                <span>Posted by {{ driver.username }}</span>
+            </div>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+            <!-- Route Information -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="text-muted">From</label>
+                        <h5>{{ ride.start }}</h5>
+                    </div>
+                    <div>
+                        <label class="text-muted">To</label>
+                        <h5>{{ ride.end }}</h5>
+                    </div>
+                </div>
+                
+                <!-- Ride Stats -->
+                <div class="col-md-6">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 border rounded">
+                                <i class="bi bi-calendar me-2"></i>
+                                <small class="text-muted">Date</small>
+                                <div>{{ ride.start_date|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded">
+                                <i class="bi bi-clock me-2"></i>
+                                <small class="text-muted">Time</small>
+                                <div>{{ ride.start_date|time:"H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded">
+                                <i class="bi bi-map me-2"></i>
+                                <small class="text-muted">Distance</small>
+                                <div>{{ ride.distance_km|floatformat:1 }} km</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded">
+                                <i class="bi bi-people me-2"></i>
+                                <small class="text-muted">Available Seats</small>
+                                <div>{{ ride.travelers }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="mb-4">
+                <div id="map" style="height: 300px;" class="rounded"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'rides' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Rides
+                </a>
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-lg"></i> Join This Ride
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<!-- Map Script -->
+<script>
+function initMap() {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
+    const map = new google.maps.Map(mapElement, {
+        mapTypeId: 'terrain',
+        zoom: 12
+    });
+
+    const origin = new google.maps.LatLng(
+        {{ ride.origin_latitude }},
+        {{ ride.origin_longitude }}
+    );
+    const destination = new google.maps.LatLng(
+        {{ ride.destination_latitude }},
+        {{ ride.destination_longitude }}
+    );
+
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend(origin);
+    bounds.extend(destination);
+    map.fitBounds(bounds);
+
+    const decodedPath = google.maps.geometry.encoding.decodePath(
+        '{{ ride.selected_route_polyline|escapejs }}'
+    );
+    
+    new google.maps.Polyline({
+        path: decodedPath,
+        map: map,
+        geodesic: true,
+        strokeColor: '#007bff',
+        strokeOpacity: 1.0,
+        strokeWeight: 3
+    });
+
+    new google.maps.Marker({
+        position: origin,
+        map: map,
+        title: 'Start',
+        label: 'A'
+    });
+
+    new google.maps.Marker({
+        position: destination,
+        map: map,
+        title: 'End',
+        label: 'B'
+    });
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=geometry&callback=initMap" async defer></script>
+{% endblock %}

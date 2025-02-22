@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 
+
+
 {% block content %}
 <!-- Add this at the top of your content block -->
 <script>
 // Global function to initialize all maps
 function initMaps() {
     {% for ride in rides %}
-
+    
     (function() {
         const mapElement = document.getElementById('map-{{ ride.id }}');
         if (!mapElement) return;
@@ -67,13 +69,17 @@ function initMaps() {
         <p class="text-muted">📅 {{ ride.start_date }} | 🚗 {{ ride.distance }} km | ⏳ {{ ride.duration }}</p>
         <p><strong>Available seats:</strong> {{ ride.travelers }}</p>
         <div class="map-container" id="map-{{ ride.id }}"></div>
-        <button class="btn btn-primary my-3">Save a penguin</button>
+        <a href="{% url 'apply_for_ride' ride.id %}" class="btn btn-success my-3">Save the Earth</a>
     </div>
     {% if not ride.route_details %}
     <p class="text-muted">No route details available for this ride.</p>
     {% endif %}
     {% endfor %}
 </div>
+
+<a href="https://wa.me/387603067074?text=Hi%20there!%20I%20would%20like%20to%20know%20more%20about%20your%20services." target="_blank">
+    <button>Contact on WhatsApp</button>
+</a>
 
 <!-- Move the Google Maps API script here and add the callback -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=geometry&callback=initMaps" async defer></script>

@@ -3,8 +3,13 @@ from django.contrib.auth.models import AbstractUser
 
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+import random
+from phonenumber_field.modelfields import PhoneNumberField
 
-
+def generate_random_phone():
+    # Generate last 4 digits randomly
+    last_digits = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+    return f"38760306{last_digits}"
 
 
 class UserLevel(models.Model):
@@ -22,6 +27,14 @@ class User(AbstractUser):
     km_passed = models.IntegerField(default=0)
     number_of_rides = models.IntegerField(default=0)
     profile_description = models.TextField(blank=True, null=True)
+    phone_number_user = models.TextField(
+        null=True, 
+        blank=True,
+        default='387603067074',
+        unique=False  # Explicitly set unique=False
+    )
+    path_to_profile_picture = models.CharField(default = "", max_length=20)
+
 
     class Meta:
         verbose_name = 'User'

@@ -21,6 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', include('login.urls')),  # Add this line
     path('profile/', include('user_profile.urls')),
-      path('rides/', include('rides.urls')),
+    path('rides/', include('rides.urls')),
     path('', include('base.urls')),
 ]

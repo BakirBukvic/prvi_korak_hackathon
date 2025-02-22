@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'base', 
     'login',
     'user_profile',
-    'rides'
+    'rides',
 ]
 
 MIDDLEWARE = [

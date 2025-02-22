@@ -85,13 +85,55 @@ def parse_duration_string(duration_str):
 
 
 
+
+from base.models import UserRideAssociation
+
+
 def submitRide(request):
     if request.method == 'POST':
         try:
             # Create the ride first
             ride = create_ride_from_post_data(request.POST)
-            # Create the route details and associate with the ride
+            
+            # Create UserRideAssociation for the driver
+            UserRideAssociation.objects.create(
+                user=request.user,
+                ride=ride,
+                is_driver=True,
+
+            )
+            
             return redirect(reverse('rides'))
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
-    
+
+from django.views.generic import DetailView
+
+
+
+class ApplyForRideView(DetailView):
+    model = Ride
+    template_name = 'apply.html'
+    context_object_name = 'ride'
+    pk_url_kwarg = 'ride_id'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        ride = self.get_object()
+        
+        # Add debugging prints
+        print(f"DEBUG: Ride ID: {ride.id}")
+        print(f"DEBUG: All riders: {ride.riders.all().count()} riders found")
+        print(f"DEBUG: Driver associations: {ride.riders.filter(is_driver=True).count()} drivers found")
+        
+        driver_association = ride.riders.filter(is_driver=True).first()
+        
+        if driver_association:
+            context['driver'] = driver_association.user
+            print(f"DEBUG: Driver found: {context['driver'].username}")
+        else:
+            print("DEBUG: No driver association found!")
+            # Set a default driver or handle the case when no driver is found
+            context['driver'] = None
+            
+        return context
