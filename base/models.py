@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 import random
-from phonenumber_field.modelfields import PhoneNumberField
 
 def generate_random_phone():
     # Generate last 4 digits randomly
@@ -54,6 +53,7 @@ class Ride(models.Model):
     STATUS_CHOICES = [
         ('PREPARING', 'Preparing'),
         ('FINISHED', 'Finished'),
+        ('CANCELED', 'Canceled'),
     ]
     status = models.CharField(
         max_length=10,

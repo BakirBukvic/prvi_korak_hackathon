@@ -91,7 +91,11 @@
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <p><i class="bi bi-people-fill"></i> Final Passengers: {{ ride.riders.count }}</p>
+                                <p><i class="bi bi-people-fill"></i> Final Passengers: 
+                                    {% with approved_count=ride.riders.filter.count %}
+                                        {{ ride.riders.filter.count|default:"0" }}
+                                    {% endwith %}
+                                </p>
                                 <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
                             </div>
                             <div class="col-md-6">
