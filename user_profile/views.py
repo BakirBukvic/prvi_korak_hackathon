@@ -103,3 +103,46 @@ def cancel_application(request, application_id):
         application.delete()
         messages.success(request, 'Application cancelled successfully')
         return redirect('user_profile:sent_rides')
+    
+
+@login_required
+def approve_application(request, application_id):
+    if request.method == 'POST':
+        application = get_object_or_404(RideApplication, id=application_id)
+        
+        # Check if the current user is the driver through UserRideAssociation
+        is_driver = UserRideAssociation.objects.filter(
+            user=request.user,
+            ride=application.ride,
+            is_driver=True
+        ).exists()
+        
+        if is_driver:
+            application.status = 'APPROVED'  # Note: Changed from 'approved' to 'APPROVED' to match model choices
+            application.save()
+            messages.success(request, f'Application for {application.user.username} has been approved.')
+        else:
+            messages.error(request, 'You do not have permission to approve this application.')
+            
+    return redirect('user_profile:pending_rides')  # Note: Added namespace to redirect
+
+@login_required
+def reject_application(request, application_id):
+    if request.method == 'POST':
+        application = get_object_or_404(RideApplication, id=application_id)
+        
+        # Check if the current user is the driver through UserRideAssociation
+        is_driver = UserRideAssociation.objects.filter(
+            user=request.user,
+            ride=application.ride,
+            is_driver=True
+        ).exists()
+        
+        if is_driver:
+            application.status = 'REJECTED'
+            application.save()
+            messages.success(request, f'Application for {application.user.username} has been rejected.')
+        else:
+            messages.error(request, 'You do not have permission to reject this application.')
+            
+    return redirect('user_profile:pending_rides')

@@ -48,12 +48,18 @@
                                     {% endif %}
                                 </div>
                                 <div class="btn-group">
-                                    <button class="btn btn-success btn-sm">
-                                        <i class="bi bi-check-lg"></i> Approve
-                                    </button>
-                                    <button class="btn btn-danger btn-sm">
-                                        <i class="bi bi-x-lg"></i> Reject
-                                    </button>
+                                    <form method="POST" action="{% url 'user_profile:approve_application' application.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-check-lg"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{% url 'user_profile:reject_application' application.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
