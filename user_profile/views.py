@@ -185,7 +185,7 @@ def reject_application(request, application_id):
             messages.success(request, f'Application for {application.user.username} has been rejected.')
         else:
             messages.error(request, 'You do not have permission to reject this application.')
-    return redirect('user_profile')
+    return redirect('user_profile:profile')
 
 
 def rides(request):
