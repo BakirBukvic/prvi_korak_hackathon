@@ -1,7 +1,7 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import UserLevel
+from .models import UserLevel, Ride,UserRideAssociation
 
 User = get_user_model()
 
@@ -28,3 +28,29 @@ def ensure_user_has_level(sender, instance, created, **kwargs):
             )
         instance.level = default_level
         instance.save()
+
+
+
+
+@receiver(pre_save, sender=Ride)
+def handle_ride_finish(sender, instance, **kwargs):
+    try:
+        # Check if this is an existing ride (not a new one)
+        if instance.pk:
+            old_instance = Ride.objects.get(pk=instance.pk)
+            
+            # Check if status is being changed to FINISHED
+            if old_instance.status != 'FINISHED' and instance.status == 'FINISHED':
+                # Get all passengers including driver
+                passengers = UserRideAssociation.objects.filter(
+                    ride=instance
+                ).select_related('user')
+                
+                # Update each passenger's stats
+                for passenger in passengers:
+                    user = passenger.user
+                    user.km_passed += instance.distance_km
+                    user.number_of_rides += 1
+                    user.save()  # This will trigger the level update signal
+    except Ride.DoesNotExist:
+        pass

@@ -147,27 +147,56 @@
         </div>
     </div>
     <style>
-
-         /* Level Progress Bar Styling */
-    .level-progress .progress {
-        background-color: rgba(137, 207, 240, 0.2);
-        border-radius: 20px;
-        overflow: hidden;
-    }
-
-    .level-progress .progress-bar {
-        background: linear-gradient(
-            90deg, 
-            var(--primary-blue), 
-            var(--accent-blue)
-        );
-        transition: width 1s ease-in-out;
-    }
-
-    .level-progress small {
-        color: var(--text-dark);
-        font-weight: 500;
-    }
+        .profile-card, .goal-card, .carbon-card, .activity-card, .leaderboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+    
+        .profile-pic {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+    
+        /* Level Progress Bar Styling */
+        .level-progress .progress {
+            background-color: rgba(137, 207, 240, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            height: 10px;
+        }
+    
+        .level-progress .progress-bar {
+            background: linear-gradient(
+                90deg, 
+                var(--primary-blue), 
+                var(--accent-blue)
+            );
+            transition: all 0.4s ease-in-out;
+        }
+    
+        .user-card:hover .progress-bar {
+            background: linear-gradient(
+                90deg,
+                #ff6b6b,
+                #ff8585
+            );
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+        }
+    
+        .level-progress small {
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.4s ease-in-out;
+        }
+    
+        .user-card:hover .level-progress small {
+            color: #ff6b6b;
+        }
+    
         /* Hero Image Section */
         .hero-image {
             height: 400px;
@@ -212,15 +241,9 @@
         }
     
         @keyframes heroShimmer {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
     
         /* Enhanced User Card Image */
@@ -299,6 +322,24 @@
         .profile-image-container:hover::after {
             opacity: 0.5;
             transform: scale(1.1);
+        }
+    
+        .ride-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+    
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 8px;
+        }
+    
+        .activity-list {
+            max-height: 200px;
+            overflow-y: scroll;
         }
     </style>
 <script>
