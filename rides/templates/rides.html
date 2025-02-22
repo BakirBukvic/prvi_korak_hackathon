@@ -6,7 +6,7 @@
 // Global function to initialize all maps
 function initMaps() {
     {% for ride in rides %}
-    {% if ride.route_details %}
+
     (function() {
         const mapElement = document.getElementById('map-{{ ride.id }}');
         if (!mapElement) return;
@@ -16,12 +16,12 @@ function initMaps() {
         });
     
         const origin = new google.maps.LatLng(
-            {{ origin_latitude }},
-            {{ origin_longitude }}
+            {{ ride.origin_latitude }},
+            {{ ride.origin_longitude }}
         );
         const destination = new google.maps.LatLng(
-            {{ destination_latitude}},
-            {{ destination_longitude }}
+            {{ ride.destination_latitude}},
+            {{ ride.destination_longitude }}
         );
     
         const bounds = new google.maps.LatLngBounds();
@@ -30,7 +30,7 @@ function initMaps() {
         map.fitBounds(bounds);
     
         const decodedPath = google.maps.geometry.encoding.decodePath(
-            '{{ selected_route_polyline|escapejs }}'
+            '{{ ride.selected_route_polyline|escapejs }}'
         );
         
         new google.maps.Polyline({
@@ -54,7 +54,7 @@ function initMaps() {
             title: 'Destination'
         });
     })();
-    {% endif %}
+
     {% endfor %}
 }
 </script>

@@ -40,23 +40,16 @@ class Ride(models.Model):
     start_date = models.DateTimeField(default=timezone.now)
     arriving_date = models.DateTimeField(default=timezone.now)
 
-
-class RouteDetails(models.Model):
-    ride = models.OneToOneField(Ride, on_delete=models.CASCADE, related_name='route_details')
-    origin_place_id = models.CharField(max_length=255)
-    origin_latitude = models.FloatField()
-    origin_longitude = models.FloatField()
-    destination_place_id = models.CharField(max_length=255)
-    destination_latitude = models.FloatField()
-    destination_longitude = models.FloatField()
-    distance_km = models.FloatField()
-    duration_text = models.CharField(max_length=100)
-    selected_route_index = models.IntegerField()
-    selected_route_polyline = models.TextField()
-
-    def __str__(self):
-        return f"Route details for {self.ride}"
-
+    origin_place_id = models.CharField(max_length=255, null=True)
+    origin_latitude = models.FloatField(default=0)
+    origin_longitude = models.FloatField(default=0)
+    destination_place_id = models.CharField(max_length=255, null=True)
+    destination_latitude = models.FloatField(default=0)
+    destination_longitude = models.FloatField(default=0)
+    distance_km = models.FloatField(default=0)
+    duration_text = models.CharField(max_length=100, null=True)
+    selected_route_index = models.IntegerField(default=0)
+    selected_route_polyline = models.TextField(default='')
 
 
 class UserRideAssociation(models.Model):
