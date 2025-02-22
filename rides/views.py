@@ -17,4 +17,9 @@ class MakeRideView(CreateView):
     fields = ['start_date', 'distance', 'duration', 'travelers']
 
 
+def submitRide(request):
+
+
+    return None
+
     
