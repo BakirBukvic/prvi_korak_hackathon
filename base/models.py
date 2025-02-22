@@ -14,36 +14,37 @@ def generate_random_phone():
 class UserLevel(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
-    points = models.IntegerField(default=0)
+    points = models.IntegerField(default=0)  # Points required to reach this level
     svg_path = models.TextField(blank=True, null=True)
     level = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
-        # Set svg_path based on level number
         self.svg_path = f"{self.level}.svg"
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
-    
 
+    class Meta:
+        ordering = ['points']  # Order levels by required points
 class User(AbstractUser):
     level = models.ForeignKey(UserLevel, on_delete=models.SET_NULL, null=True)
     km_passed = models.IntegerField(default=0)
     number_of_rides = models.IntegerField(default=0)
-    profile_description = models.TextField(blank=True, null=True)
-    phone_number_user = models.TextField(
-        null=True, 
-        blank=True,
-        default='387603067074',
-        unique=False  # Explicitly set unique=False
-    )
-    path_to_profile_picture = models.CharField(default = "", max_length=20, null=True)
+    # ... other fields ...
 
+    def calculate_points(self):
+        return round(self.km_passed * 0.1)  # 0.1 points per km
 
-    class Meta:
-        verbose_name = 'User'
-        verbose_name_plural = 'Users'
+    def update_level(self):
+        current_points = self.calculate_points()
+        appropriate_level = UserLevel.objects.filter(
+            points__lte=current_points
+        ).order_by('-points').first()
+        
+        if appropriate_level and (not self.level or self.level.level < appropriate_level.level):
+            self.level = appropriate_level
+            self.save()
 
 
 
