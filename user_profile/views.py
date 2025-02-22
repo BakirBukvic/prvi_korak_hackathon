@@ -115,6 +115,7 @@ def cancel_application(request, application_id):
         return redirect('user_profile:sent_rides')
     return redirect('user_profile')
 
+
 def approve_application(request, application_id):
     if request.method == 'POST':
         application = get_object_or_404(RideApplication, id=application_id)
@@ -132,11 +133,18 @@ def approve_application(request, application_id):
             ride.travelers -= 1
             application.save()
             ride.save()
+            
+            # Create UserRideAssociation for the passenger if it doesn't exist
+            UserRideAssociation.objects.get_or_create(
+                user=application.user,
+                ride=ride,
+                defaults={'is_driver': False}
+            )
+            
             messages.success(request, f'Application for {application.user.username} has been approved.')
         else:
             messages.error(request, 'You do not have permission to approve this application.')
-    return redirect('user_profile:pending_rides')  # Changed from 'user_profile' to 'user_profile:pending_rides'
-
+    return redirect('user_profile')
 
 def reject_application(request, application_id):
     if request.method == 'POST':
@@ -215,7 +223,6 @@ def delete_ride(request, ride_id):
             return JsonResponse({'success': False, 'error': 'Ride not found or you are not the driver'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-
 def leave_ride(request, ride_id):
     if request.method == 'POST':
         try:
@@ -237,11 +244,10 @@ def leave_ride(request, ride_id):
             ride.travelers += 1
             ride.save()
             
-            # Also delete any pending applications from this user for this ride
+            # Delete the application if it exists
             RideApplication.objects.filter(
                 user=request.user,
-                ride=ride,
-                status='PENDING'
+                ride=ride
             ).delete()
             
             return JsonResponse({'success': True})
