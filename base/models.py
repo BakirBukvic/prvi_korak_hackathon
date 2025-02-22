@@ -33,7 +33,7 @@ class User(AbstractUser):
         default='387603067074',
         unique=False  # Explicitly set unique=False
     )
-    path_to_profile_picture = models.CharField(default = "", max_length=20)
+    path_to_profile_picture = models.CharField(default = "", max_length=20, null=True)
 
 
     class Meta:

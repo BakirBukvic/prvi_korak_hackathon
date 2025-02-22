@@ -8,11 +8,24 @@
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h3 class="mb-0">Ride Details</h3>
             <div class="d-flex align-items-center">
+
+                {% if driver.path_to_profile_picture %}
                 <img src="{% static 'base/profile_pictures/'|add:driver.path_to_profile_picture|default:'base/profile_pictures/default_avatar.png' %}" 
                 class="rounded-circle me-2" 
                 width="40" 
                 height="40" 
                 alt="Driver photo">
+
+                {% else %}
+                <img src="{% static 'base/profile_pictures/default_picture.png' %}" 
+                class="rounded-circle me-2" 
+                width="40" 
+                height="40" 
+                alt="Driver photo">
+
+
+
+                {% endif %}
                 <span>Posted by {{ driver.username }}</span>
             </div>
         </div>
@@ -73,17 +86,24 @@
             </div>
 
             <!-- Action Buttons -->
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'rides' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Back to Rides
+                    <div class="d-flex justify-content-between align-items-center">
+            <a href="{% url 'rides' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Rides
+            </a>
+            
+            <a href="https://wa.me/{{ driver.phone_number_user }}?text=Hi%20there!%20I%20would%20like%20to%20know%20more%20about%20your%20services." 
+                target="_blank" 
+                class="btn btn-outline-success">
+                    <i class="bi bi-whatsapp"></i> Contact on WhatsApp
                 </a>
-                <form method="post" class="d-inline">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-lg"></i> Join This Ride
-                    </button>
-                </form>
-            </div>
+
+            <form method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Join This Ride
+                </button>
+            </form>
+        </div>
         </div>
     </div>
 </div>
