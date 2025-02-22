@@ -1,3 +1,5 @@
+html
+Copy
 {% extends 'base.html' %}
 
 {% block content %}
@@ -5,20 +7,33 @@
     <h1 class="mb-4">Create a New Ride</h1>
     
     <form id="rideForm">
+        <!-- Origin Input -->
         <div class="form-group">
-            <label for="citySearch">Enter Destination City:</label>
-            <input type="text" id="citySearch" name="city" class="form-control" placeholder="Start typing city name..." required>
-            <div class="invalid-feedback">Please select a city from the dropdown.</div>
+            <label for="originSearch">Starting Point:</label>
+            <input type="text" id="originSearch" name="origin" class="form-control" placeholder="Start typing origin city..." required>
+            <div class="invalid-feedback">Please select a starting point from the dropdown.</div>
         </div>
 
-        <!-- Hidden inputs to store the selected place data -->
-        <input type="hidden" id="selectedPlaceId" name="place_id">
-        <input type="hidden" id="latitude" name="latitude">
-        <input type="hidden" id="longitude" name="longitude">
+        <!-- Destination Input -->
+        <div class="form-group">
+            <label for="destinationSearch">Destination:</label>
+            <input type="text" id="destinationSearch" name="destination" class="form-control" placeholder="Start typing destination city..." required>
+            <div class="invalid-feedback">Please select a destination from the dropdown.</div>
+        </div>
+
+        <!-- Hidden inputs for both origin and destination -->
+        <input type="hidden" id="origin_place_id" name="origin_place_id">
+        <input type="hidden" id="origin_latitude" name="origin_latitude">
+        <input type="hidden" id="origin_longitude" name="origin_longitude">
+        
+        <input type="hidden" id="destination_place_id" name="destination_place_id">
+        <input type="hidden" id="destination_latitude" name="destination_latitude">
+        <input type="hidden" id="destination_longitude" name="destination_longitude">
 
         <button type="button" class="btn btn-primary mt-3" onclick="showRoute()">Show Route</button>
     </form>
 
+    <!-- Rest of the HTML remains the same -->
     <div id="routeOptions" class="mt-3" style="display: none;">
         <h4>Available Routes:</h4>
         <div id="routesList" class="list-group"></div>
@@ -36,70 +51,78 @@
         </div>
     </div>
 
-    <!-- Map container -->
     <div id="map" style="height: 500px; width: 100%; margin-top: 20px;"></div>
 </div>
 
-<!-- Add Google Maps API with Places and Directions libraries -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=places,directions&callback=initAutocomplete" async defer></script>
 
 <script>
-    let map;
-    let directionsService;
-    let directionsRenderer;
+  let map;
+let directionsService;
+let directionsRenderer;
 
-    function initAutocomplete() {
-        const input = document.getElementById('citySearch');
-        const options = {
+function initAutocomplete() {
+    // Initialize both autocompletes
+    const initAutocompleteFor = (elementId, prefix) => {
+        const input = document.getElementById(elementId);
+        const autocomplete = new google.maps.places.Autocomplete(input, {
             types: ['(cities)'],
             fields: ['place_id', 'name', 'geometry']
-        };
-
-        const autocomplete = new google.maps.places.Autocomplete(input, options);
+        });
 
         autocomplete.addListener('place_changed', () => {
             const place = autocomplete.getPlace();
-            
             if (!place.geometry) {
                 input.classList.add('is-invalid');
                 return;
             }
 
             input.classList.remove('is-invalid');
-            document.getElementById('selectedPlaceId').value = place.place_id;
-            document.getElementById('latitude').value = place.geometry.location.lat();
-            document.getElementById('longitude').value = place.geometry.location.lng();
+            document.getElementById(`${prefix}_place_id`).value = place.place_id;
+            document.getElementById(`${prefix}_latitude`).value = place.geometry.location.lat();
+            document.getElementById(`${prefix}_longitude`).value = place.geometry.location.lng();
         });
+    };
 
-        // Initialize map
-        const sarajevo = { lat: 43.8563, lng: 18.4131 };
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 12,
-            center: sarajevo
-        });
+    // Initialize both origin and destination autocompletes
+    initAutocompleteFor('originSearch', 'origin');
+    initAutocompleteFor('destinationSearch', 'destination');
 
-        directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer();
-        directionsRenderer.setMap(map);
+    // Initialize map
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 7,
+        center: {lat: 43.8563, lng: 18.4131} // Default center
+    });
+
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map);
+}
+
+function showRoute() {
+    const originLat = parseFloat(document.getElementById('origin_latitude').value);
+    const originLng = parseFloat(document.getElementById('origin_longitude').value);
+    const destLat = parseFloat(document.getElementById('destination_latitude').value);
+    const destLng = parseFloat(document.getElementById('destination_longitude').value);
+
+    // Validate both inputs
+    if (!originLat || !originLng) {
+        document.getElementById('originSearch').classList.add('is-invalid');
+        return;
     }
-
-    function showRoute() {
-    const destinationLat = parseFloat(document.getElementById('latitude').value);
-    const destinationLng = parseFloat(document.getElementById('longitude').value);
-    
-    if (!destinationLat || !destinationLng) {
-        document.getElementById('citySearch').classList.add('is-invalid');
+    if (!destLat || !destLng) {
+        document.getElementById('destinationSearch').classList.add('is-invalid');
         return;
     }
 
-    const sarajevo = { lat: 43.8563, lng: 18.4131 };
-    const destination = { lat: destinationLat, lng: destinationLng };
+    const origin = { lat: originLat, lng: originLng };
+    const destination = { lat: destLat, lng: destLng };
 
     const request = {
-        origin: sarajevo,
+        origin: origin,
         destination: destination,
         travelMode: 'DRIVING',
-        provideRouteAlternatives: true, // Enable multiple routes
+        provideRouteAlternatives: true,
         unitSystem: google.maps.UnitSystem.METRIC
     };
 

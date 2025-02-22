@@ -15,3 +15,6 @@ class MakeRideView(CreateView):
     model = Ride
     template_name = 'make_ride.html'
     fields = ['start_date', 'distance', 'duration', 'travelers']
+
+
+    
