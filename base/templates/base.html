@@ -1,6 +1,8 @@
 
+
 <!DOCTYPE html>
 {% load static %}
+
 
 <html lang="en">
 <head>
@@ -8,21 +10,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ADD TITLE LATER</title>
     <!-- Bootstrap 5.0 CSS -->
-    <link href="#" 
-          rel="stylesheet" 
-          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" 
+    <link href="#"
+          rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
           crossorigin="anonymous">
           <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+       
+
 
           <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <style>
+/* Update the penguin-container class */
+.penguin-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px 0;
+    position: static; /* Changed from fixed to static */
+    width: 100%;
+    background-color: #ffffff; /* Optional: add background color if needed */
+}
+
+/* Update the main-container class */
+.main-container {
+    margin-top: 20px; /* Reduce margin since penguin is not fixed anymore */
+}
+
+
         body {
             background-color: #ffffff;
             min-height: 100vh;
             padding: 10px;
         }
-    
+   
         /* Navbar Styles */
         .navbar-sticky {
             position: sticky;
@@ -31,11 +51,11 @@
             transition: all 0.3s ease-in-out;
             border-bottom: 2px solid white;
         }
-    
+   
         .navbar-scrolled {
             background-color: #dddddd !important;
         }
-    
+   
         .navbar {
             width: 100%;
             display: flex;
@@ -44,7 +64,7 @@
             align-items: center;
             padding: 1rem 0;
         }
-    
+   
         /* Navigation Links */
         .nav-link {
             display: inline-flex !important;
@@ -57,12 +77,12 @@
             position: relative;
             padding: 0.5rem 1rem;
         }
-    
+   
         .nav-link img {
             display: block;
             transition: opacity 0.3s ease-in-out;
         }
-    
+   
         /* Link Text & Hover Effects */
         .link-text {
             display: block;
@@ -72,16 +92,16 @@
             transition: opacity 0.3s ease-in-out;
             margin-left: 8px;
         }
-    
+   
         .nav-link:hover img {
             opacity: 0;
         }
-    
+   
         .nav-link:hover .link-text {
             opacity: 1;
             transform: translateY(0);
         }
-    
+   
         /* Dropdown Specific Styles */
         .dropdown-menu {
             min-width: 200px;
@@ -93,7 +113,7 @@
             box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
             animation: dropdownFade 0.3s ease-in-out;
         }
-    
+   
         @keyframes dropdownFade {
             from {
                 opacity: 0;
@@ -104,7 +124,7 @@
                 transform: translateY(0);
             }
         }
-    
+   
         .dropdown-item {
             padding: 0.7rem 1.5rem;
             color: #333;
@@ -113,30 +133,30 @@
             display: flex;
             align-items: center;
         }
-    
+   
         .dropdown-item:hover {
             background-color: #f8f9fa;
             transform: translateX(5px);
             color: #000;
         }
-    
+   
         .dropdown-divider {
             margin: 0.5rem 0;
             border-top: 1px solid #eee;
         }
-    
+   
         /* Ensure dropdown toggle keeps image visible */
         .dropdown-toggle:hover img {
             opacity: 1 !important;
         }
-    
+   
         /* Make username visible in dropdown toggle */
         .dropdown-toggle .link-text {
             position: relative !important;
             opacity: 1 !important;
             margin-left: 10px;
         }
-    
+   
         /* Navbar Items Spacing */
         .navbar-nav {
             display: flex;
@@ -146,37 +166,76 @@
             margin: 0;
             padding: 0;
         }
-    
+   
         /* Show dropdown on hover */
         .nav-item.dropdown:hover .dropdown-menu {
             display: block;
         }
-    
+   
         /* Additional hover effects */
         .nav-link:hover {
             transform: translateY(-2px);
         }
-    
+   
         /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-    
+   
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .navbar {
                 padding: 0.5rem 0;
             }
-            
+           
             .nav-link {
                 margin: 0 10px;
             }
-            
+           
             .dropdown-menu {
                 min-width: 160px;
             }
         }
+        .link-text {
+    display: block;
+    position: absolute;
+    opacity: 0;
+    color: black;
+    transition: opacity 0.3s ease-in-out;
+}
+
+
+/* Edited by Mirza*/
+.logo-container {
+        position: relative;
+        width: 150px; /* Match the penguin image width */
+        height: 200px; /* Match the penguin image height */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+   
+        /* Added class for eye elements to control their position */
+        .eye {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            transition: transform 0.1s ease-out; /* Added smooth transition for eye movement */
+        }
+        /* Adjusted eye positioning */
+        #eye1 {
+            left: 60px;  /* Adjusted left position */
+            top: 70px;   /* Adjusted top position */
+        }
+
+
+        #eye2 {
+            left: 84px;  /* Adjusted left position */
+            top: 70px;   /* Adjusted top position */
+        }
+
+
     </style>
 </head>
 <body>
@@ -184,20 +243,21 @@
         <!-- Sticky Navbar -->
         <nav class="navbar navbar-dark navbar-sticky d-flex justify-content-center">
 
-            <a class="navbar-brand me-5" href="/">
-                <!-- STAVI NEKI LOGO POSLIJE -->
-            </a>
+
+           
             <a class="nav-link" href="{% url 'user_profile:profile' %}">
                 <img src="{% static 'base/svgs/penguin_base.svg' %}" alt="Profile" width="50" height="50">
                 <span class="link-text">Profile</span>
             </a>
 
+
             <a class="nav-link" href="{% url 'rides' %}">
+
 
                    <img src="{% static 'base/svgs/car.svg' %}" alt="Rides" width="50" height="50">
                 <span class="link-text">Rides</span>
             </a>
-      
+     
             {% if user.is_authenticated %}
             <div class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -227,21 +287,33 @@
             {% endfor %}
         </div>
         {% endif %}
+        <div class="penguin-container">
+            <div class="logo-container">
+                <img src="{% static 'base/penguin_images/penguin.svg' %}" alt="Penguin Body" width="150" height="200"/>
+                <img id="eye1" class="eye" src="{% static 'base/penguin_images/rightEye.svg' %}" alt="Penguin Eye 1"/>
+                <img id="eye2" class="eye" src="{% static 'base/penguin_images/rightEye.svg' %}" alt="Penguin Eye 2"/>
+            </div>
+        </div>
         {% block content %}
         {% endblock content %}
     </div>
 
+  
+
 
     <!-- Bootstrap 5.0 JavaScript -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" 
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
             crossorigin="anonymous"></script>
 </body>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const navbar = document.querySelector('.navbar');
-        
+        const eye1 = document.getElementById("eye1");
+        const eye2 = document.getElementById("eye2");
+       
         window.addEventListener('scroll', function() {
             if (window.scrollY > 0) {
                 navbar.classList.add('navbar-scrolled');
@@ -249,7 +321,30 @@
                 navbar.classList.remove('navbar-scrolled');
             }
         });
+         // Updated: Adjusted eye movement using transform CSS property
+         document.addEventListener("mousemove", (event) => {
+                let rect = navbar.getBoundingClientRect();
+                let centerX = rect.left + rect.width / 2;
+                let centerY = rect.top + rect.height / 2;
+
+
+                let dx = event.clientX - centerX;
+                let dy = event.clientY - centerY;
+                let angle = Math.atan2(dy, dx);
+                let distance = Math.min(3, Math.hypot(dx, dy) / 100);
+
+
+                let eyeOffsetX = Math.cos(angle) * distance;
+                let eyeOffsetY = Math.sin(angle) * distance;
+
+
+                // Updated: Move the eyes using the 'transform' property
+                eye1.style.transform = `translate(${eyeOffsetX}px, ${eyeOffsetY}px)`;
+                eye2.style.transform = `translate(${eyeOffsetX}px, ${eyeOffsetY}px)`;
+            });
     });
 </script>
 
+
 </html>
+
