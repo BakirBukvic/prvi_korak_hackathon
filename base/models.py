@@ -17,6 +17,12 @@ class UserLevel(models.Model):
     points = models.IntegerField(default=0)
     svg_path = models.TextField(blank=True, null=True)
     level = models.IntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        # Set svg_path based on level number
+        self.svg_path = f"{self.level}.svg"
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
     
