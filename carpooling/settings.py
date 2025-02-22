@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
     # iskljucen za sad odluci poslije business use case koji zelis
     # 'carpooling.middleware.LoginRequiredMiddleware',  # login required for everything middleware
 ]
@@ -134,10 +135,9 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'  # Redirect to home page after login
-LOGOUT_REDIRECT_URL = '/login/'  # Redirect to login after logout
+LOGIN_REDIRECT_URL = '/'  
+LOGOUT_REDIRECT_URL = '/'  # Changed from '/login/' to '/'
 AUTH_USER_MODEL = 'base.User'
 
 GOOGLE_MAPS_API_KEY = 'your-api-key-here' 
