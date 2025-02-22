@@ -178,12 +178,12 @@ def rides(request):
 
     # Future rides: Either future date OR 'PREPARING' status
     future_rides = user_rides.filter(
-        Q(start_date__gt=now) | Q(status='PREPARING')
+        status='PREPARING'
     ).order_by('start_date')
     
     # Past rides: Only include rides with 'FINISHED' status
     past_rides = user_rides.filter(
-        status='FINISHED'  # Remove the start_date condition
+        ~Q(status='PREPARING')  # Using ~ to negate the condition
     ).order_by('-start_date')
 
     context = {
@@ -220,3 +220,62 @@ def remove_passenger(request, ride_id, user_id):
         return JsonResponse({'success': True})
     
     return JsonResponse({'success': False})
+
+
+@login_required
+def cancel_ride(request, ride_id):
+    if request.method == 'POST':
+        try:
+            # Get the ride and verify the current user is the driver
+            ride = get_object_or_404(Ride, 
+                id=ride_id,
+                riders__user=request.user,
+                riders__is_driver=True
+            )
+            
+            # Only allow canceling rides in PREPARING status
+            if ride.status == 'PREPARING':
+                # Update the ride status to CANCELED
+                ride.status = 'CANCELED'
+                ride.save()
+                
+                # Optional: Notify passengers or handle any cleanup
+                
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Can only cancel rides in PREPARING status'
+                })
+                
+        except Ride.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Ride not found or you are not the driver'
+            })
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+@login_required 
+def delete_ride(request, ride_id):
+    if request.method == 'POST':
+        try:
+            # Get the ride and verify the current user is the driver
+            ride = get_object_or_404(Ride,
+                id=ride_id,
+                riders__user=request.user, 
+                riders__is_driver=True
+            )
+            
+            # Delete associated records and the ride itself
+            ride.delete()
+            
+            return JsonResponse({'success': True})
+            
+        except Ride.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Ride not found or you are not the driver'
+            })
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
