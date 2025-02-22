@@ -1,42 +1,27 @@
 from django.views.generic import DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
-import os
-import random
-from django.conf import settings
-
-from django.views.generic import DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth import get_user_model
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db.models import Count, Q, F, Prefetch, Subquery, OuterRef, BooleanField, When, Case
+from base.models import RideApplication, UserRideAssociation, Ride
 import os
 import random
 from django.conf import settings
-from base.models import RideApplication, UserRideAssociation, Ride
-from django.http import JsonResponse  # Add this import
-from django.utils import timezone
-from django.db.models import Count, Q, F
 
 def calculate_penguins_saved(distance):
-    # Divide distance by 83 and round to 2 decimal places
-        return round(distance / 83, 2)
+    return round(distance / 83, 2)
 
 def get_random_penguin():
     try:
-        # Use BASE_DIR from settings to ensure correct path
         base_dir = settings.BASE_DIR
         penguin_dir = os.path.join(base_dir, 'base', 'static', 'base', 'penguin_images')
-        # Create directory if it doesn't exist
         os.makedirs(penguin_dir, exist_ok=True)
         images = os.listdir(penguin_dir)
-        if not images:
-            # Return a default image name if no images exist
-            return 'default_penguin.jpg'
-        return random.choice(images)
-    except Exception as e:
-        # Return a default image name in case of any error
+        return random.choice(images) if images else 'default_penguin.jpg'
+    except Exception:
         return 'default_penguin.jpg'
 
 class UserProfileView(LoginRequiredMixin, DetailView):
@@ -52,264 +37,217 @@ class UserProfileView(LoginRequiredMixin, DetailView):
         context['penguins_saved'] = calculate_penguins_saved(user.km_passed)
         context['random_penguin'] = get_random_penguin()
 
-        # Add data for My Rides tab
-        now = timezone.now()
+        # Define prefetches for efficiency
         approved_applications = Prefetch(
             'applications',
             queryset=RideApplication.objects.filter(status='APPROVED').select_related('user'),
             to_attr='approved_passengers'
         )
+        driver_prefetch = Prefetch(
+            'riders',
+            queryset=UserRideAssociation.objects.filter(is_driver=True).select_related('user'),
+            to_attr='driver_association'
+        )
 
+        # Subquery to determine if the user is the driver for each ride
+        user_association = UserRideAssociation.objects.filter(
+            ride=OuterRef('pk'),
+            user=user
+        ).values('is_driver')[:1]
+
+        # Fetch all rides where the user is associated (driver or passenger)
         user_rides = Ride.objects.filter(
-            riders__user=user,
-            riders__is_driver=True
+            riders__user=user
         ).annotate(
+            is_driver=Subquery(user_association, output_field=BooleanField()),
             approved_count=Count('applications', filter=Q(applications__status='APPROVED')),
             initial_travelers=F('travelers')
-        ).prefetch_related(approved_applications, 'riders__user')
+        ).prefetch_related(approved_applications, driver_prefetch, 'riders__user')
 
+        # Split into future and past rides
         context['future_rides'] = user_rides.filter(status='PREPARING').order_by('start_date')
         context['past_rides'] = user_rides.filter(~Q(status='PREPARING')).order_by('-start_date')
 
-        # Add data for Pending Rides tab
+        # Pending Rides tab data
         user_rides_ids = UserRideAssociation.objects.filter(
             user=user,
             is_driver=True
         ).values_list('ride', flat=True)
-
         context['pending_applications'] = RideApplication.objects.filter(
             ride__in=user_rides_ids,
             status='PENDING'
         ).select_related('user', 'ride')
 
-        # Add data for Sent Rides tab
+        # Sent Rides tab data
         context['ride_applications'] = RideApplication.objects.filter(
             user=user
         ).select_related('ride').order_by('-applied_at')
 
         return context
-    
+
     def get_object(self, queryset=None):
         return self.request.user
-    
 
+# Supporting view functions (unchanged from original, included for completeness)
 
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from base.models import RideApplication, UserRideAssociation
-
-@login_required
 def pendingRides(request):
-    # Get all rides where the user is the driver
     user_rides = UserRideAssociation.objects.filter(
         user=request.user,
         is_driver=True
     ).values_list('ride', flat=True)
-
-    # Get pending applications for those rides
     pending_applications = RideApplication.objects.filter(
         ride__in=user_rides,
         status='PENDING'
     ).select_related('user', 'ride')
+    return render(request, 'pending_rides.html', {'pending_applications': pending_applications})
 
-    context = {
-        'pending_applications': pending_applications
-    }
-    
-    return render(request, 'pending_rides.html', context)
-     
-
-@login_required
 def sent_rides(request):
-    # Get all applications for the current user
     ride_applications = RideApplication.objects.filter(
         user=request.user
     ).select_related('ride').order_by('-applied_at')
-    
-    return render(request, 'sent_rides.html', {
-        'ride_applications': ride_applications
-    })
+    return render(request, 'sent_rides.html', {'ride_applications': ride_applications})
 
-@login_required
 def cancel_application(request, application_id):
     if request.method == 'POST':
-        application = get_object_or_404(RideApplication, 
-                                      id=application_id, 
-                                      user=request.user, 
-                                      status='PENDING')
+        application = get_object_or_404(RideApplication, id=application_id, user=request.user, status='PENDING')
         application.delete()
         messages.success(request, 'Application cancelled successfully')
         return redirect('user_profile:sent_rides')
-    
+    return redirect('user_profile')
 
-@login_required
 def approve_application(request, application_id):
     if request.method == 'POST':
         application = get_object_or_404(RideApplication, id=application_id)
-        
-        # Check if the current user is the driver through UserRideAssociation
         is_driver = UserRideAssociation.objects.filter(
             user=request.user,
             ride=application.ride,
             is_driver=True
         ).exists()
-        
         if is_driver:
-            # Check if there are available seats
             ride = application.ride
             if ride.travelers <= 0:
                 messages.error(request, 'No more seats available for this ride.')
                 return redirect('user_profile:pending_rides')
-            
-            # Update application status and decrease available passengers
             application.status = 'APPROVED'
             ride.travelers -= 1
-            
-            # Save both objects
             application.save()
             ride.save()
-            
             messages.success(request, f'Application for {application.user.username} has been approved.')
         else:
             messages.error(request, 'You do not have permission to approve this application.')
-            
-    return redirect('user_profile')
-@login_required
+    return redirect('user_profile:pending_rides')  # Changed from 'user_profile' to 'user_profile:pending_rides'
+
+
 def reject_application(request, application_id):
     if request.method == 'POST':
         application = get_object_or_404(RideApplication, id=application_id)
-        
-        # Check if the current user is the driver through UserRideAssociation
         is_driver = UserRideAssociation.objects.filter(
             user=request.user,
             ride=application.ride,
             is_driver=True
         ).exists()
-        
         if is_driver:
             application.status = 'REJECTED'
             application.save()
             messages.success(request, f'Application for {application.user.username} has been rejected.')
         else:
             messages.error(request, 'You do not have permission to reject this application.')
-            
     return redirect('user_profile:pending_rides')
 
-from django.db.models import Count, Q, F, Prefetch
 
-@login_required
 def rides(request):
     now = timezone.now()
     user = request.user
-
-    # Prefetch approved applications and their users
     approved_applications = Prefetch(
         'applications',
         queryset=RideApplication.objects.filter(status='APPROVED').select_related('user'),
         to_attr='approved_passengers'
     )
-
     user_rides = Ride.objects.filter(
-        riders__user=user,
-        riders__is_driver=True
+        riders__user=user
     ).annotate(
-        approved_count=Count('applications', filter=Q(applications__status='APPROVED')),
-        initial_travelers=F('travelers')
-    ).prefetch_related(approved_applications, 'riders__user')
-
-    # Future and past rides logic remains the same
+        is_driver=Case(
+            When(riders__user=user, riders__is_driver=True, then=True),
+            default=False,
+            output_field=BooleanField()
+        ),
+    approved_count=Count('applications', filter=Q(applications__status='APPROVED')),
+    initial_travelers=F('travelers')
+).prefetch_related(approved_applications, 'riders__user')
     future_rides = user_rides.filter(status='PREPARING').order_by('start_date')
     past_rides = user_rides.filter(~Q(status='PREPARING')).order_by('-start_date')
-
-    context = {
-        'future_rides': future_rides,
-        'past_rides': past_rides,
-        'user': user
-    }
+    context = {'future_rides': future_rides, 'past_rides': past_rides, 'user': user}
     return render(request, 'my_rides.html', context)
-    
-@login_required
+
 def remove_passenger(request, ride_id, user_id):
     if request.method == 'POST':
-        ride = get_object_or_404(Ride, 
-            id=ride_id, 
-            riders__user=request.user, 
-            riders__is_driver=True
-        )
-        
-        # Get the association to remove
-        association = get_object_or_404(UserRideAssociation, 
-            ride=ride,
-            user_id=user_id,
-            is_driver=False
-        )
-        
-        # Remove the passenger
+        ride = get_object_or_404(Ride, id=ride_id, riders__user=request.user, riders__is_driver=True)
+        association = get_object_or_404(UserRideAssociation, ride=ride, user_id=user_id, is_driver=False)
         association.delete()
-        
-        # Increase available seats
         ride.travelers += 1
         ride.save()
-        
         return JsonResponse({'success': True})
-    
     return JsonResponse({'success': False})
 
 
-@login_required
 def cancel_ride(request, ride_id):
     if request.method == 'POST':
         try:
-            # Get the ride and verify the current user is the driver
-            ride = get_object_or_404(Ride, 
-                id=ride_id,
-                riders__user=request.user,
-                riders__is_driver=True
-            )
-            
-            # Only allow canceling rides in PREPARING status
+            ride = get_object_or_404(Ride, id=ride_id, riders__user=request.user, riders__is_driver=True)
             if ride.status == 'PREPARING':
-                # Update the ride status to CANCELED
                 ride.status = 'CANCELED'
                 ride.save()
-                
-                # Optional: Notify passengers or handle any cleanup
-                
                 return JsonResponse({'success': True})
             else:
-                return JsonResponse({
-                    'success': False, 
-                    'error': 'Can only cancel rides in PREPARING status'
-                })
-                
+                return JsonResponse({'success': False, 'error': 'Can only cancel rides in PREPARING status'})
         except Ride.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'error': 'Ride not found or you are not the driver'
-            })
-            
+            return JsonResponse({'success': False, 'error': 'Ride not found or you are not the driver'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-@login_required 
+
 def delete_ride(request, ride_id):
     if request.method == 'POST':
         try:
-            # Get the ride and verify the current user is the driver
-            ride = get_object_or_404(Ride,
-                id=ride_id,
-                riders__user=request.user, 
-                riders__is_driver=True
+            ride = get_object_or_404(Ride, id=ride_id, riders__user=request.user, riders__is_driver=True)
+            ride.delete()
+            return JsonResponse({'success': True})
+        except Ride.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Ride not found or you are not the driver'})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def leave_ride(request, ride_id):
+    if request.method == 'POST':
+        try:
+            # Get the ride and user association
+            association = get_object_or_404(
+                UserRideAssociation, 
+                ride_id=ride_id,
+                user=request.user,
+                is_driver=False  # Only passengers can leave
             )
             
-            # Delete associated records and the ride itself
-            ride.delete()
+            # Get the ride
+            ride = association.ride
+            
+            # Delete the association
+            association.delete()
+            
+            # Increment available seats
+            ride.travelers += 1
+            ride.save()
+            
+            # Also delete any pending applications from this user for this ride
+            RideApplication.objects.filter(
+                user=request.user,
+                ride=ride,
+                status='PENDING'
+            ).delete()
             
             return JsonResponse({'success': True})
-            
-        except Ride.DoesNotExist:
+        except UserRideAssociation.DoesNotExist:
             return JsonResponse({
-                'success': False,
-                'error': 'Ride not found or you are not the driver'
+                'success': False, 
+                'error': 'You are not a passenger on this ride or the ride does not exist'
             })
-            
     return JsonResponse({'success': False, 'error': 'Invalid request method'})

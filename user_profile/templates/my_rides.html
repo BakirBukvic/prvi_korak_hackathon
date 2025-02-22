@@ -1,10 +1,6 @@
-
 {% load static %}
 
-
 <div class="container mt-4">
-
-   
     <!-- Future Rides Section -->
     <div class="mb-5">
         <h3>Upcoming Rides <i class="bi bi-calendar-event"></i></h3>
@@ -19,56 +15,69 @@
                         <small>{{ ride.start_date|date:"M d, Y H:i" }}</small>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-warning btn-sm cancel-ride" data-ride-id="{{ ride.id }}">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                        <button class="btn btn-danger btn-sm delete-ride" data-ride-id="{{ ride.id }}">
-                            <i class="bi bi-trash"></i> Delete
-                        </button>
+                        {% if ride.is_driver %}
+                            <button class="btn btn-warning btn-sm cancel-ride" data-ride-id="{{ ride.id }}">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </button>
+                            <button class="btn btn-danger btn-sm delete-ride" data-ride-id="{{ ride.id }}">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        {% else %}
+                            <button class="btn btn-secondary btn-sm leave-ride" data-ride-id="{{ ride.id }}">
+                                <i class="bi bi-box-arrow-right"></i> Leave Ride
+                            </button>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <p><i class="bi bi-people-fill"></i> Approved Passengers: {{ ride.approved_count }}/{{ ride.initial_travelers }}</p>
+                            {% if ride.is_driver %}
+                                <p><i class="bi bi-people-fill"></i> Approved Passengers: {{ ride.approved_count }}/{{ ride.initial_travelers }}</p>
+                            {% else %}
+                                <p><i class="bi bi-car-front-fill"></i> Driver: {{ ride.driver_association.0.user.username }}</p>
+                            {% endif %}
                             <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
                         </div>
                         <div class="col-md-6">
                             <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
-                            <p><i class="bi bi-hourglass-split"></i> Status: Active</p>
+                            <p><i class="bi bi-hourglass-split"></i> Status: {{ ride.status }}</p>
                         </div>
                     </div>
-                    
-                    <h6>Passengers:</h6>
-    {% if ride.approved_count > 0 %}
-        <div class="list-group">
-            {% for application in ride.approved_passengers %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        {% if application.user.path_to_profile_picture %}
-                            <img src="{% static 'base/profile_pictures/'|add:application.user.path_to_profile_picture %}" 
-                                 class="rounded-circle me-2" 
-                                 width="40" 
-                                 height="40" 
-                                 alt="Profile photo">
+                    {% if ride.is_driver %}
+                        <h6>Passengers:</h6>
+                        {% if ride.approved_count > 0 %}
+                            <div class="list-group">
+                                {% for application in ride.approved_passengers %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            {% if application.user.path_to_profile_picture %}
+                                                <img src="{% static 'base/profile_pictures/'|add:application.user.path_to_profile_picture %}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="40" 
+                                                     height="40" 
+                                                     alt="Profile photo">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ application.user.username }}</h6>
+                                                <small class="text-muted">Passenger</small>
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-danger btn-sm remove-passenger" 
+                                                data-user-id="{{ application.user.id }}"
+                                                data-ride-id="{{ ride.id }}">
+                                            <i class="bi bi-x-lg"></i> Remove
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No passengers yet</p>
                         {% endif %}
-                        <div>
-                            <h6 class="mb-0">{{ application.user.username }}</h6>
-                            <small class="text-muted">Passenger</small>
-                        </div>
-                    </div>
-                    <button class="btn btn-danger btn-sm remove-passenger" 
-                            data-user-id="{{ application.user.id }}"
-                            data-ride-id="{{ ride.id }}">
-                        <i class="bi bi-x-lg"></i> Remove
-                    </button>
+                    {% else %}
+                        <p>You are a passenger on this ride.</p>
+                    {% endif %}
                 </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="text-muted">No passengers yet</p>
-    {% endif %}
-</div>
             </div>
             {% endfor %}
         {% else %}
@@ -91,24 +100,26 @@
                             </h5>
                             <small>{{ ride.start_date|date:"M d, Y H:i" }}</small>
                         </div>
-                       
                         <div>
-                            <button class="btn btn-danger btn-sm delete-ride" data-ride-id="{{ ride.id }}">
-                                <i class="bi bi-trash"></i> Delete
-                            </button>
+                            {% if ride.is_driver %}
+                                <button class="btn btn-danger btn-sm delete-ride" data-ride-id="{{ ride.id }}">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
-                    
                     <div class="card-body">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <p><i class="bi bi-people-fill"></i> Final Passengers: {{ ride.approved_count }}</p>
+                                {% if ride.is_driver %}
+                                    <p><i class="bi bi-people-fill"></i> Final Passengers: {{ ride.approved_count }}</p>
+                                {% else %}
+                                    <p><i class="bi bi-car-front-fill"></i> Driver: {{ ride.driver_association.0.user.username }}</p>
+                                {% endif %}
                                 <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
                             </div>
                             <div class="col-md-6">
                                 <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
-                               
-                               
                                 <p>
                                     {% if ride.status == 'PREPARING' %}
                                         <i class="bi bi-hourglass-split text-warning"></i>
@@ -119,36 +130,33 @@
                                     {% endif %}
                                     {{ ride.status }}
                                 </p>
-
-
                             </div>
                         </div>
-
-                        {% if ride.approved_count > 0 %}
-                        <h6>Passengers:</h6>
-                        <div class="list-group">
-                            {% for association in ride.riders.all %}
-                                {% if not association.is_driver %}
-                                    <div class="list-group-item">
-                                        <div class="d-flex align-items-center">
-                                            {% if association.user.path_to_profile_picture %}
-                                                <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
-                                                     class="rounded-circle me-2" 
-                                                     width="40" 
-                                                     height="40" 
-                                                     alt="Profile photo">
-                                            {% endif %}
-                                            <div>
-                                                <h6 class="mb-0">{{ association.user.username }}</h6>
-                                                <small class="text-muted">
-                                                    Passenger
-                                                </small>
+                        {% if ride.is_driver and ride.approved_count > 0 %}
+                            <h6>Passengers:</h6>
+                            <div class="list-group">
+                                {% for association in ride.riders.all %}
+                                    {% if not association.is_driver %}
+                                        <div class="list-group-item">
+                                            <div class="d-flex align-items-center">
+                                                {% if association.user.path_to_profile_picture %}
+                                                    <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
+                                                         class="rounded-circle me-2" 
+                                                         width="40" 
+                                                         height="40" 
+                                                         alt="Profile photo">
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ association.user.username }}</h6>
+                                                    <small class="text-muted">Passenger</small>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% elif not ride.is_driver %}
+                            <p>You were a passenger on this ride.</p>
                         {% else %}
                             <p class="text-muted">No passengers</p>
                         {% endif %}
@@ -162,88 +170,83 @@
         {% endif %}
     </div>
 </div>
-<!-- Bootstrap Icons -->
 
-
+<!-- JavaScript for interactivity -->
 <script>
 document.querySelectorAll('.remove-passenger').forEach(button => {
     button.addEventListener('click', function() {
         if (confirm('Are you sure you want to remove this passenger?')) {
             const userId = this.dataset.userId;
             const rideId = this.dataset.rideId;
-            
             fetch(`/profile/remove_passenger/${rideId}/${userId}/`, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error removing passenger');
-                }
+                if (data.success) location.reload();
+                else alert('Error removing passenger');
             });
         }
     });
 });
-// Cancel ride functionality
+
 document.querySelectorAll('.cancel-ride').forEach(button => {
     button.addEventListener('click', function() {
         if (confirm('Are you sure you want to cancel this ride? This action cannot be undone.')) {
             const rideId = this.dataset.rideId;
-            
             fetch(`/profile/cancel_ride/${rideId}/`, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error canceling ride');
-                }
+                if (data.success) location.reload();
+                else alert('Error canceling ride');
             });
         }
     });
 });
 
-// Delete ride functionality
 document.querySelectorAll('.delete-ride').forEach(button => {
     button.addEventListener('click', function() {
         if (confirm('Are you sure you want to delete this ride? This action cannot be undone.')) {
             const rideId = this.dataset.rideId;
-            
             fetch(`/profile/delete_ride/${rideId}/`, {
                 method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                },
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error deleting ride');
-                }
+                if (data.success) location.reload();
+                else alert('Error deleting ride');
             });
         }
     });
 });
 
-
-document.addEventListener('DOMContentLoaded', function() {
-    var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
-    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
-        return new bootstrap.Dropdown(dropdownToggleEl)
+// Add Leave Ride functionality (placeholder, requires backend implementation)
+document.querySelectorAll('.leave-ride').forEach(button => {
+    button.addEventListener('click', function() {
+        if (confirm('Are you sure you want to leave this ride?')) {
+            const rideId = this.dataset.rideId;
+            fetch(`/profile/leave_ride/${rideId}/`, {  // Note: Endpoint not implemented yet
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert('Error leaving ride');
+            });
+        }
     });
 });
 
-
+document.addEventListener('DOMContentLoaded', function() {
+    var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
+    var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+        return new bootstrap.Dropdown(dropdownToggleEl);
+    });
+});
 </script>

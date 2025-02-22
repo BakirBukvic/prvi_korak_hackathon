@@ -285,5 +285,23 @@
             firstTab.classList.add('show', 'active');
         }
     });
+
+
+    document.querySelectorAll('.leave-ride').forEach(button => {
+    button.addEventListener('click', function() {
+        if (confirm('Are you sure you want to leave this ride?')) {
+            const rideId = this.dataset.rideId;
+            fetch(`/profile/leave_ride/${rideId}/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': '{{ csrf_token }}'}
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) location.reload();
+                else alert('Error leaving ride');
+            });
+        }
+    });
+});
     </script>
 {% endblock content %}
