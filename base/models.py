@@ -28,6 +28,8 @@ class User(AbstractUser):
         verbose_name_plural = 'Users'
 
 
+
+
 class Ride(models.Model):
     start = models.CharField(max_length=50)
     end = models.CharField (max_length=50)
@@ -37,3 +39,19 @@ class Ride(models.Model):
     created_on = models.DateTimeField(default=timezone.now)  # Changed from auto_now_add
     start_date = models.DateTimeField(default=timezone.now)
     arriving_date = models.DateTimeField(default=timezone.now)
+
+
+
+class UserRideAssociation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rides')
+    ride = models.ForeignKey(Ride, on_delete=models.CASCADE, related_name='riders')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_driver = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'ride')
+        verbose_name = 'User Ride Association'
+        verbose_name_plural = 'User Ride Associations'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.ride.start} to {self.ride.end}"

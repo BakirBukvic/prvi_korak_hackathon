@@ -6,7 +6,8 @@ Copy
 <div class="container mt-4">
     <h1 class="mb-4">Create a New Ride</h1>
     
-    <form id="rideForm" action = >
+    <form id="rideForm" action="{% url 'submit_ride' %}" method="POST">
+        {% csrf_token %}
         <!-- Origin Input -->
         <div class="form-group">
             <label for="originSearch">Starting Point:</label>
@@ -20,7 +21,16 @@ Copy
             <input type="text" id="destinationSearch" name="destination" class="form-control" placeholder="Start typing destination city..." required>
             <div class="invalid-feedback">Please select a destination from the dropdown.</div>
         </div>
-
+        <hr>
+        <input type="number" 
+           id="travelers" 
+           name="travelers" 
+           class="form-control" 
+           min="1" 
+           max="8" 
+           value="1" 
+           required>
+    <div class="invalid-feedback">Please enter a number between 1 and 8.</div>
         <!-- Hidden inputs for both origin and destination -->
         <input type="hidden" id="origin_place_id" name="origin_place_id">
         <input type="hidden" id="origin_latitude" name="origin_latitude">
@@ -30,7 +40,14 @@ Copy
         <input type="hidden" id="destination_latitude" name="destination_latitude">
         <input type="hidden" id="destination_longitude" name="destination_longitude">
 
+        <input type="hidden" id="distance_km" name="distance_km">
+        <input type="hidden" id="duration_text" name="duration_text">
+        <input type="hidden" id="selected_route_index" name="selected_route_index">
+        <input type="hidden" id="selected_route_polyline" name="selected_route_polyline">
+
         <button type="button" class="btn btn-primary mt-3" onclick="showRoute()">Show Route</button>
+        <button type="submit" class="btn btn-success mt-3" id="submitBtn" disabled>Submit</button>
+        
     </form>
 
     <!-- Rest of the HTML remains the same -->
@@ -164,6 +181,15 @@ function showRoute() {
                     // Update main details
                     document.getElementById('distance').textContent = leg.distance.text;
                     document.getElementById('duration').textContent = leg.duration.text;
+
+                    document.getElementById('distance_km').value = (leg.distance.value / 1000).toFixed(2);
+                    document.getElementById('duration_text').value = leg.duration.text;
+                    document.getElementById('selected_route_index').value = index;
+                    document.getElementById('selected_route_polyline').value = route.overview_polyline;
+
+                    
+    // Enable submit button
+    document.getElementById('submitBtn').disabled = false;
                 });
 
                 routesList.appendChild(routeOption);
