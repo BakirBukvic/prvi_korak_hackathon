@@ -20,3 +20,11 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
+
+
+class Ride(models.Model):
+    start = models.CharField(max_length=50)
+    end = models.CharField (max_length=50)
+    distance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    travelers = models.IntegerField(default=1)
+    
