@@ -178,9 +178,18 @@ def rides(request):
     ).prefetch_related('riders__user')
 
     # Split into future and past rides
+    future_rides = user_rides.filter(
+        Q(start_date__gt=now) | Q(status='PREPARING')  # Add status condition here
+    ).order_by('start_date')
+    
+    past_rides = user_rides.filter(
+        start_date__lte=now,
+        status='FINISHED'  # Only show finished rides in past rides
+    ).order_by('-start_date')
+
     context = {
-        'future_rides': user_rides.filter(start_date__gt=now).order_by('start_date'),
-        'past_rides': user_rides.filter(start_date__lte=now).order_by('-start_date'),
+        'future_rides': future_rides,
+        'past_rides': past_rides,
         'user': user
     }
     
