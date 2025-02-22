@@ -31,6 +31,7 @@ class User(AbstractUser):
     level = models.ForeignKey(UserLevel, on_delete=models.SET_NULL, null=True)
     km_passed = models.IntegerField(default=0)
     number_of_rides = models.IntegerField(default=0)
+    penguins_saved = models.IntegerField(default=0)  # New field
     # ... other fields ...
 
     def calculate_points(self):
@@ -46,8 +47,51 @@ class User(AbstractUser):
             self.level = appropriate_level
             self.save()
 
+class Penguin(models.Model):
+    RARITY_CHOICES = [
+        ('COMMON', 'Common'),
+        ('RARE', 'Rare'),
+        ('EPIC', 'Epic'),
+        ('LEGENDARY', 'Legendary'),
+    ]
 
+    penguin_name = models.CharField(max_length=100)
+    svg_direction = models.CharField(max_length=255)  # Path to SVG file
+    rarity = models.CharField(
+        max_length=10,
+        choices=RARITY_CHOICES,
+        default='COMMON'
+    )
 
+    def __str__(self):
+        return f"{self.penguin_name} ({self.get_rarity_display()})"
+
+    class Meta:
+        verbose_name = 'Penguin'
+        verbose_name_plural = 'Penguins'
+
+    @property
+    def rarity_color(self):
+        return {
+            'COMMON': '#808080',     # Gray
+            'RARE': '#0077be',       # Blue
+            'EPIC': '#9b30ff',       # Purple
+            'LEGENDARY': '#ffd700',   # Gold
+        }.get(self.rarity, '#808080')
+
+class PenguinCollected(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collected_penguins')
+    penguin = models.ForeignKey(Penguin, on_delete=models.CASCADE)
+    is_collected = models.BooleanField(default=False)
+    collected_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'penguin')  # Each user can collect each penguin only once
+        verbose_name = 'Collected Penguin'
+        verbose_name_plural = 'Collected Penguins'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.penguin.penguin_name}"
 
 class Ride(models.Model):
     start = models.CharField(max_length=50)

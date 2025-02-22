@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>My Penguin Collection</h3>
+    <p>Unlocked: {{ unlocked_penguins }} / {{ total_penguins }}</p>
+    
+    <div class="row g-4">
+        {% for penguin in penguins %}
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 {% if not penguin.is_collected %}card-locked{% endif %}" 
+                 {% if not penguin.is_collected %}
+                 data-penguin-id="{{ penguin.id }}"
+                 onclick="unlockPenguin(this)"
+                 {% endif %}>
+                {% if penguin.is_collected %}
+                    <img src="{% static 'base/penguin_images/'|add:penguin.penguin.svg_direction %}" 
+                         class="card-img-top p-3" 
+                         alt="{{ penguin.penguin.penguin_name }}">
+                {% else %}
+                    <img src="{% static 'base/penguin_images/questionmark_penguin.svg' %}" 
+                         class="card-img-top p-3" 
+                         alt="Mystery Penguin">
+                {% endif %}
+                <div class="card-body text-center">
+                    {% if penguin.is_collected %}
+                        <h5 class="card-title">{{ penguin.penguin.penguin_name }}</h5>
+                    {% else %}
+                        <h5 class="card-title">???</h5>
+                    {% endif %}
+                    <span class="badge {% if penguin.is_collected %}bg-success{% else %}bg-secondary{% endif %}">
+                        {{ penguin.is_collected|yesno:"Unlocked,Locked" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-locked {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    opacity: 0.8;
+}
+
+.card-locked img {
+    filter: brightness(0.7);
+}
+
+.card-img-top {
+    height: 200px;
+    object-fit: contain;
+}
+</style>
+
+<script>
+function unlockPenguin(element) {
+    const penguinId = element.dataset.penguinId;
+    fetch(`/penguins/unlock/${penguinId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload(); // Refresh to show unlocked penguin
+        }
+    });
+}
+</script>
+{% endblock %}

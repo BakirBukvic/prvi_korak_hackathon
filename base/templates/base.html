@@ -205,6 +205,13 @@
                    <img src="{% static 'base/svgs/car.svg' %}" alt="Rides" width="50" height="50">
                 <span class="link-text">Rides</span>
             </a>
+
+            <a class="nav-link" href="{% url 'rides' %}">
+
+                
+                <img src="{% static 'base/svgs/penguin_base.svg' %}" alt="Rides" width="50" height="50">
+             <span class="link-text">The Sacred Collection</span>
+         </a>
      
             {% if user.is_authenticated %}
             <a class="nav-link logout-hover" href="{% url 'base:logout' %}">

@@ -6,6 +6,7 @@
 
 <style>
 
+
 .profile-card, .goal-card, .carbon-card, .activity-card, .leaderboard-card {
             background: white;
             border-radius: 10px;
@@ -75,6 +76,10 @@
 
                         <p class="card-text">Total Distance: {{ user_profile.km_passed }} km</p>
                         <p class="card-text">Rides: {{ user_profile.number_of_rides }}</p>
+                        <p class="card-text d-flex align-items-center">
+                            <i class="bi bi-snow2" style="color: var(--primary-blue); margin-right: 8px;"></i>
+                            Penguins Saved: {{ user_profile.penguins_saved }}
+                        </p>
                         {% if user_profile.profile_description %}
                             <p class="card-text">{{ user_profile.profile_description }}</p>
                         {% endif %}
@@ -147,6 +152,25 @@
         </div>
     </div>
     <style>
+.penguins-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;  /* Reduced gap between penguins */
+    max-width: 150px;  /* Limit container width */
+    margin-left: 8px;  /* Space after the number */
+}
+
+.saved-penguin {
+    transition: transform 0.3s ease;
+    opacity: 0.8;  /* Slightly transparent by default */
+}
+
+.saved-penguin:hover {
+    transform: scale(1.5) rotate(10deg);  /* Bigger scale on hover for visibility */
+    filter: drop-shadow(0 0 2px var(--primary-blue));
+    opacity: 1;  /* Full opacity on hover */
+}
+
         .profile-card, .goal-card, .carbon-card, .activity-card, .leaderboard-card {
             background: white;
             border-radius: 10px;

@@ -1,7 +1,9 @@
 from django.db.models.signals import pre_save, post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from .models import UserLevel, Ride,UserRideAssociation
+from .models import UserLevel, Ride,UserRideAssociation, Penguin, PenguinCollected
+import random
+
 
 User = get_user_model()
 
@@ -54,3 +56,41 @@ def handle_ride_finish(sender, instance, **kwargs):
                     user.save()  # This will trigger the level update signal
     except Ride.DoesNotExist:
         pass
+
+
+User = get_user_model()
+
+@receiver(pre_save, sender=User)
+def update_penguins_saved(sender, instance, **kwargs):
+    """Calculate penguins saved based on kilometers passed"""
+    if instance.pk:  # Only for existing users
+        old_instance = User.objects.get(pk=instance.pk)
+        if old_instance.km_passed != instance.km_passed:
+            # Calculate penguins saved (1 penguin per 100km)
+            instance.penguins_saved = instance.km_passed // 100
+
+
+@receiver(pre_save, sender=User)
+def create_penguin_collection(sender, instance, **kwargs):
+    """Create PenguinCollected entries when user gets new penguins"""
+    if instance.pk:  # Only for existing users
+        old_instance = User.objects.get(pk=instance.pk)
+        new_penguins = instance.penguins_saved - old_instance.penguins_saved
+        
+        # Only proceed if user got new penguins
+        if new_penguins > 0:
+            # Get all available penguins
+            available_penguins = Penguin.objects.all()
+            
+            if available_penguins.exists():
+                # Create new PenguinCollected entries for each new penguin
+                for _ in range(new_penguins):
+                    # Get random penguin
+                    random_penguin = random.choice(available_penguins)
+                    
+                    # Create new collection entry if it doesn't exist
+                    PenguinCollected.objects.get_or_create(
+                        user=instance,
+                        penguin=random_penguin,
+                        defaults={'is_collected': False}
+                    )
