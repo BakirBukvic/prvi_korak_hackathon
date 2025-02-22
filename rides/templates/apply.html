@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block content %}
+{% include 'join_this_ride_modal.html' %}
 <div class="container py-4">
     <div class="card shadow">
         <!-- Card Header with Driver Info -->
@@ -136,17 +137,14 @@
             <form method="post" class="d-inline">
                 {% csrf_token %}
                 {% if user.is_authenticated %}
-                    <form method="post" class="d-inline">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-lg"></i> Join This Ride
-                        </button>
-                    </form>
-                {% else %}
-                    <a href="{% url 'login:login' %}?next={{ request.path }}" class="btn btn-primary">
-                        <i class="bi bi-box-arrow-in-right"></i> Login to Join Ride
-                    </a>
-                {% endif %}
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinRideConfirmModal">
+                    <i class="bi bi-check-lg"></i> Join This Ride
+                </button>
+            {% else %}
+                <a href="{% url 'login:login' %}?next={{ request.path }}" class="btn btn-primary">
+                    <i class="bi bi-box-arrow-in-right"></i> Login to Join Ride
+                </a>
+            {% endif %}
             </form>
         </div>
         </div>
@@ -208,7 +206,19 @@ function initMap() {
         label: 'B'
     });
 }
+
+document.getElementById('confirmJoinRide').addEventListener('click', function() {
+    // Get the form that wraps the join button
+    const form = document.querySelector('form');
+    // Submit the form
+    form.submit();
+    // Close the modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('joinRideConfirmModal'));
+    modal.hide();
+});
 </script>
+
+
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=geometry&callback=initMap" async defer></script>
 {% endblock %}
