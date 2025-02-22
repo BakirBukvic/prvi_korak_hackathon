@@ -1,61 +1,113 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<!-- Add this at the top of your content block -->
+<script>
+// Global function to initialize all maps
+function initMaps() {
+    {% for ride in rides %}
+    {% if ride.route_details %}
+    (function() {
+        const mapElement = document.getElementById('map-{{ ride.id }}');
+        if (!mapElement) return;
+    
+        const map = new google.maps.Map(mapElement, {
+            mapTypeId: 'terrain'
+        });
+    
+        const origin = new google.maps.LatLng(
+            {{ origin_latitude }},
+            {{ origin_longitude }}
+        );
+        const destination = new google.maps.LatLng(
+            {{ destination_latitude}},
+            {{ destination_longitude }}
+        );
+    
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend(origin);
+        bounds.extend(destination);
+        map.fitBounds(bounds);
+    
+        const decodedPath = google.maps.geometry.encoding.decodePath(
+            '{{ selected_route_polyline|escapejs }}'
+        );
+        
+        new google.maps.Polyline({
+            path: decodedPath,
+            map: map,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+        });
+    
+        new google.maps.Marker({
+            position: origin,
+            map: map,
+            title: 'Origin'
+        });
+    
+        new google.maps.Marker({
+            position: destination,
+            map: map,
+            title: 'Destination'
+        });
+    })();
+    {% endif %}
+    {% endfor %}
+}
+</script>
 
 <a href="{% url 'make_ride' %}" class="btn btn-primary">Make a ride</a>
 
 <div class="container">
+    {% for ride in rides %}
     <div class="ride-card shadow-sm">
-       
-        {% for ride in rides %}
         <p class="text-muted">📅 {{ ride.start_date }} | 🚗 {{ ride.distance }} km | ⏳ {{ ride.duration }}</p>
-        <p><strong>Available seats:</strong> {{ ride.travelers }}
-        <div class="map-container" id="map">
-            <img src="https://picsum.photos/200/300" alt="">
-        </div>
-        <!-- ADD HOW MANY PENGUINS ARE BEING SAVED BASED ON THE DISTANCE TRAVELED -->
-        <button class="btn btn-primary my-3"> Save a penguin</button>
+        <p><strong>Available seats:</strong> {{ ride.travelers }}</p>
+        <div class="map-container" id="map-{{ ride.id }}"></div>
+        <button class="btn btn-primary my-3">Save a penguin</button>
     </div>
-
+    {% if not ride.route_details %}
+    <p class="text-muted">No route details available for this ride.</p>
+    {% endif %}
     {% endfor %}
-
 </div>
 
+<!-- Move the Google Maps API script here and add the callback -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=geometry&callback=initMaps" async defer></script>
 
 <style>
+    .ride-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin: 10px 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
-.ride-card {
-    background: white;
-    border-radius: 10px;
-    padding: 15px;
-    margin: 10px 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
+    .map-container {
+        width: 100%;
+        height: 300px;
+        border-radius: 8px;
+    }
 
-.map-container {
-    width: 100%;
-    height: 300px;
-    border-radius: 8px;
-}
+    .ride-card h6 {
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
 
-/* Optional: Additional styling for text elements */
-.ride-card h6 {
-    margin-bottom: 10px;
-    font-weight: bold;
-}
+    .ride-card p {
+        margin-bottom: 8px;
+    }
 
-.ride-card p {
-    margin-bottom: 8px;
-}
+    .text-muted {
+        color: #6c757d !important;
+    }
 
-.text-muted {
-    color: #6c757d !important;
-}
-
-.shadow-sm {
-    box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
-}
+    .shadow-sm {
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075) !important;
+    }
 </style>
-
-
 {% endblock %}
