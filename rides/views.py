@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView
-from base.models import Ride
+from base.models import Ride, RouteDetails
 from django.views.generic import CreateView
 
 from django.views.generic import ListView
@@ -43,6 +43,33 @@ def create_ride_from_post_data(post_data):
     ride.save()
     return ride
 
+def create_ride_details_from_post_data(post_data, ride):
+    """
+    Creates a RouteDetails instance from POST data and associates it with a ride
+    Args:
+        post_data: The POST request data
+        ride: The Ride instance to associate with
+    Returns:
+        RouteDetails instance
+    """
+    route_details = RouteDetails(
+        ride=ride,
+        origin_place_id=post_data.get('origin_place_id'),
+        origin_latitude=float(post_data.get('origin_latitude')),
+        origin_longitude=float(post_data.get('origin_longitude')),
+        destination_place_id=post_data.get('destination_place_id'),
+        destination_latitude=float(post_data.get('destination_latitude')),
+        destination_longitude=float(post_data.get('destination_longitude')),
+        distance_km=float(post_data.get('distance_km')),
+        duration_text=post_data.get('duration_text'),
+        selected_route_index=int(post_data.get('selected_route_index')),
+        selected_route_polyline=post_data.get('selected_route_polyline')
+    )
+    route_details.save()
+    return route_details
+
+
+
 def parse_duration_string(duration_str):
     # Extract hours and minutes from strings like "2 hours 30 mins"
     hours = 0
@@ -64,8 +91,10 @@ def parse_duration_string(duration_str):
 def submitRide(request):
     if request.method == 'POST':
         try:
+            # Create the ride first
             ride = create_ride_from_post_data(request.POST)
-            # Redirect to rides list page on success
+            # Create the route details and associate with the ride
+            route_details = create_ride_details_from_post_data(request.POST, ride)
             return redirect(reverse('rides'))
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
