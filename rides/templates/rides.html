@@ -4,13 +4,18 @@
 
 <div class="container">
     <div class="ride-card shadow-sm">
-        <h6>Sunset City Ride</h6>
-        <p class="text-muted">📅 Jan 15, 2025 | 🚴 25 km | ⏳ 1h 20m</p>
-        <p><strong>Participants:</strong> 12 riders | <strong>Points Earned:</strong> 250 points</p>
+       
+        {% for ride in rides %}
+        <p class="text-muted">📅 {{ ride.start_date }} | 🚗 {{ ride.distance }} km | ⏳ {{ ride.duration }}</p>
+        <p><strong>Available seats:</strong> {{ ride.travelers }}
         <div class="map-container" id="map">
             <img src="https://picsum.photos/200/300" alt="">
         </div>
+        <!-- ADD HOW MANY PENGUINS ARE BEING SAVED BASED ON THE DISTANCE TRAVELED -->
+        <button class="btn btn-primary my-3"> Save a penguin</button>
     </div>
+
+    {% endfor %}
 
 </div>
 

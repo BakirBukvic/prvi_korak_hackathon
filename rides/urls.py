@@ -1,6 +1,6 @@
 from django.urls import path
-from . import views
+from .views import RideListView
 
 urlpatterns = [
-    path('', views.ride, name='rides'),
+    path('', RideListView.as_view(), name='rides'),
 ]

@@ -1,6 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
+
+
+
+
 class UserLevel(models.Model):
     name = models.CharField(max_length=50)
     description = models.TextField(blank=True, null=True)
@@ -27,4 +33,7 @@ class Ride(models.Model):
     end = models.CharField (max_length=50)
     distance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     travelers = models.IntegerField(default=1)
-    
+    duration = models.DurationField(null=True, blank=True)  
+    created_on = models.DateTimeField(default=timezone.now)  # Changed from auto_now_add
+    start_date = models.DateTimeField(default=timezone.now)
+    arriving_date = models.DateTimeField(default=timezone.now)
