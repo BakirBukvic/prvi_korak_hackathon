@@ -14,7 +14,10 @@ from django.contrib.auth.decorators import login_required
 import os
 import random
 from django.conf import settings
-from base.models import RideApplication, UserRideAssociation
+from base.models import RideApplication, UserRideAssociation, Ride
+from django.http import JsonResponse  # Add this import
+from django.utils import timezone
+from django.db.models import Count, Q, F
 
 def calculate_penguins_saved(distance):
     # Divide distance by 83 and round to 2 decimal places
@@ -118,14 +121,25 @@ def approve_application(request, application_id):
         ).exists()
         
         if is_driver:
-            application.status = 'APPROVED'  # Note: Changed from 'approved' to 'APPROVED' to match model choices
+            # Check if there are available seats
+            ride = application.ride
+            if ride.travelers <= 0:
+                messages.error(request, 'No more seats available for this ride.')
+                return redirect('user_profile:pending_rides')
+            
+            # Update application status and decrease available passengers
+            application.status = 'APPROVED'
+            ride.travelers -= 1
+            
+            # Save both objects
             application.save()
+            ride.save()
+            
             messages.success(request, f'Application for {application.user.username} has been approved.')
         else:
             messages.error(request, 'You do not have permission to approve this application.')
             
-    return redirect('user_profile:pending_rides')  # Note: Added namespace to redirect
-
+    return redirect('user_profile:pending_rides')
 @login_required
 def reject_application(request, application_id):
     if request.method == 'POST':
@@ -146,3 +160,55 @@ def reject_application(request, application_id):
             messages.error(request, 'You do not have permission to reject this application.')
             
     return redirect('user_profile:pending_rides')
+
+
+
+@login_required
+def rides(request):
+    now = timezone.now()
+    user = request.user
+
+    # Get rides where user is the driver
+    user_rides = Ride.objects.filter(
+        riders__user=user,
+        riders__is_driver=True
+    ).annotate(
+        approved_count=Count('riders', filter=Q(riders__is_driver=False)),
+        initial_travelers=F('travelers')
+    ).prefetch_related('riders__user')
+
+    # Split into future and past rides
+    context = {
+        'future_rides': user_rides.filter(start_date__gt=now).order_by('start_date'),
+        'past_rides': user_rides.filter(start_date__lte=now).order_by('-start_date'),
+        'user': user
+    }
+    
+    return render(request, 'rides.html', context)
+    
+@login_required
+def remove_passenger(request, ride_id, user_id):
+    if request.method == 'POST':
+        ride = get_object_or_404(Ride, 
+            id=ride_id, 
+            riders__user=request.user, 
+            riders__is_driver=True
+        )
+        
+        # Get the association to remove
+        association = get_object_or_404(UserRideAssociation, 
+            ride=ride,
+            user_id=user_id,
+            is_driver=False
+        )
+        
+        # Remove the passenger
+        association.delete()
+        
+        # Increase available seats
+        ride.travelers += 1
+        ride.save()
+        
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False})

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Future Rides Section -->
+    <div class="mb-5">
+        <h3>Upcoming Rides <i class="bi bi-calendar-event"></i></h3>
+        {% if future_rides %}
+            {% for ride in future_rides %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-geo-alt"></i> {{ ride.start }} → {{ ride.end }}
+                        </h5>
+                        <span class="badge bg-primary">
+                            {{ ride.start_date|date:"M d, Y H:i" }}
+                        </span>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><i class="bi bi-people-fill"></i> Approved Passengers: {{ ride.approved_count }}/{{ ride.initial_travelers }}</p>
+                                <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
+                                <p><i class="bi bi-hourglass-split"></i> Status: Active</p>
+                            </div>
+                        </div>
+
+                        {% if ride.riders.exists %}
+                        <h6>Passengers:</h6>
+                        <div class="list-group">
+                            {% for association in ride.riders.all %}
+                                {% if association.user != request.user %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            {% if association.user.path_to_profile_picture %}
+                                                <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
+                                                     class="rounded-circle me-2" 
+                                                     width="40" 
+                                                     height="40" 
+                                                     alt="Profile photo">
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ association.user.username }}</h6>
+                                                <small class="text-muted">
+                                                    {% if association.is_driver %}Driver{% else %}Passenger{% endif %}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        {% if not association.is_driver %}
+                                            <button class="btn btn-danger btn-sm remove-passenger" 
+                                                    data-user-id="{{ association.user.id }}"
+                                                    data-ride-id="{{ ride.id }}">
+                                                <i class="bi bi-x-lg"></i> Remove
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                            <p class="text-muted">No passengers yet</p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> You have no upcoming rides.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Past Rides Section -->
+    <div>
+        <h3>Past Rides <i class="bi bi-clock-history"></i></h3>
+        {% if past_rides %}
+            {% for ride in past_rides %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-geo-alt"></i> {{ ride.start }} → {{ ride.end }}
+                        </h5>
+                        <small>{{ ride.start_date|date:"M d, Y H:i" }}</small>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><i class="bi bi-people-fill"></i> Final Passengers: {{ ride.riders.count }}</p>
+                                <p><i class="bi bi-map"></i> Distance: {{ ride.distance_km|floatformat:1 }} km</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><i class="bi bi-clock"></i> Duration: {{ ride.duration_text }}</p>
+                                <p><i class="bi bi-check-circle-fill text-success"></i> Completed</p>
+                            </div>
+                        </div>
+
+                        {% if ride.riders.exists %}
+                        <h6>Passengers:</h6>
+                        <div class="list-group">
+                            {% for association in ride.riders.all %}
+                                <div class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        {% if association.user.path_to_profile_picture %}
+                                            <img src="{% static 'base/profile_pictures/'|add:association.user.path_to_profile_picture %}" 
+                                                 class="rounded-circle me-2" 
+                                                 width="40" 
+                                                 height="40" 
+                                                 alt="Profile photo">
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ association.user.username }}</h6>
+                                            <small class="text-muted">
+                                                {% if association.is_driver %}Driver{% else %}Passenger{% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> You have no past rides.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+<script>
+document.querySelectorAll('.remove-passenger').forEach(button => {
+    button.addEventListener('click', function() {
+        if (confirm('Are you sure you want to remove this passenger?')) {
+            const userId = this.dataset.userId;
+            const rideId = this.dataset.rideId;
+            
+            fetch(`/profile/remove_passenger/${rideId}/${userId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error removing passenger');
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
