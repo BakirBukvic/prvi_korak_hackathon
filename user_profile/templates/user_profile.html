@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}  <!-- Add this line -->
 {% block content %}
 
 <style>
@@ -34,6 +34,7 @@
             max-height: 200px;
             overflow-y: scroll;
         }
+    
 </style>
     <!-- Hero Image Section -->
     <div class="hero-image"></div>
@@ -44,10 +45,13 @@
             <!-- Left Column - User Card -->
             <div class="col-md-4">
                 <div class="card user-card shadow-sm">
-                    <div class="card-body">
+                    <div class="card-body mb-3">
                         <img src="https://picsum.photos/200/300" alt="{{ user_profile.username }}'s Profile Image">
                         <h5 class="card-title mt-2">Nice to see you, {{ user_profile.username }}!</h5>
-                        <p class="card-text">Level: {{ user_profile.level.name }}</p>
+                        <p class="card-text mb-3">Level: {{ user_profile.level.name }}</p>
+                        <p class="card-text mb-3 " style="margin-top:50px">   
+                            <img src="{% static 'base/svgs/bedzevi/'|add:user_profile.level.svg_path %}" alt="{{ user_profile.level.name }} Badge" width="100" height="100">
+                        </p>
                         <p class="card-text">Total Distance: {{ user_profile.km_passed }} km</p>
                         <p class="card-text">Rides: {{ user_profile.number_of_rides }}</p>
                         {% if user_profile.profile_description %}

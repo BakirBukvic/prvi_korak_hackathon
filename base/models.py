@@ -6,7 +6,7 @@ class UserLevel(models.Model):
     description = models.TextField(blank=True, null=True)
     points = models.IntegerField(default=0)
     svg_path = models.TextField(blank=True, null=True)
-
+    level = models.IntegerField(default=0)
     def __str__(self):
         return self.name
     
