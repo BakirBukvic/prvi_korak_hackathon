@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.views.generic import ListView
-from base.models import Ride
+from base.models import Ride, RideApplication
 from django.views.generic import CreateView
 from django.db.models import Count
 from django.views.generic import ListView
@@ -155,35 +155,31 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib import messages
 
+
+
 @login_required
 def join_ride(request, ride_id):
     if request.method == 'POST':
         try:
             ride = get_object_or_404(Ride, id=ride_id)
             
-            # Check if user is already in the ride
-            if UserRideAssociation.objects.filter(user=request.user, ride=ride).exists():
-                messages.error(request, 'You are already part of this ride')
+            # Check if user already has an application for this ride
+            if RideApplication.objects.filter(user=request.user, ride=ride).exists():
+                messages.error(request, 'You have already applied for this ride')
                 return redirect('rides')
             
-            # Check if there are available seats
-            current_riders = UserRideAssociation.objects.filter(ride=ride).count()
-            if current_riders >= ride.travelers:
-                messages.error(request, 'No available seats')
-                return redirect('rides')
-            
-            # Create association
-            UserRideAssociation.objects.create(
+            # Create the application
+            RideApplication.objects.create(
                 user=request.user,
                 ride=ride,
-                is_driver=False
+                status='PENDING'
             )
             
-            messages.success(request, 'Successfully joined the ride! Awaiting approval.')
+            messages.success(request, 'Your application has been submitted! Waiting for driver approval.')
             return redirect('rides')
             
         except Exception as e:
-            messages.error(request, f'Error joining ride: {str(e)}')
+            messages.error(request, f'Error applying for ride: {str(e)}')
             return redirect('rides')
             
     return redirect('rides')
