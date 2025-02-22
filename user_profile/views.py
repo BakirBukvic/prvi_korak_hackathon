@@ -10,6 +10,7 @@ from base.models import RideApplication, UserRideAssociation, Ride
 import os
 import random
 from django.conf import settings
+from base.models import UserLevel
 
 def calculate_penguins_saved(distance):
     return round(distance / 83, 2)
@@ -37,6 +38,30 @@ class UserProfileView(LoginRequiredMixin, DetailView):
         context['penguins_saved'] = calculate_penguins_saved(user.km_passed)
         context['random_penguin'] = get_random_penguin()
 
+
+        current_points = user.calculate_points()
+        next_level = UserLevel.objects.filter(
+            points__gt=current_points
+        ).order_by('points').first()
+
+        if next_level:
+            # Calculate progress percentage
+            current_level_points = user.level.points if user.level else 0
+            points_range = next_level.points - current_level_points
+            points_progress = current_points - current_level_points
+            progress_percentage = min(100, round((points_progress / points_range) * 100))
+            points_needed = next_level.points - current_points
+        else:
+            # Max level reached
+            progress_percentage = 100
+            points_needed = 0
+            next_level = user.level
+
+        context.update({
+            'next_level': next_level,
+            'progress_percentage': progress_percentage,
+            'points_needed': points_needed
+        })
         # Define prefetches for efficiency
         approved_applications = Prefetch(
             'applications',
