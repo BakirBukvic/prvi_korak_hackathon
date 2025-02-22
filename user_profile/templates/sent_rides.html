@@ -1,8 +1,71 @@
 {% extends 'base.html' %}
-{% load static %}  <!-- Add this line -->
+{% load static %}
+
 {% block content %}
+<div class="container mt-4">
+    <h2>My Ride Applications</h2>
+    
+    {% if ride_applications %}
+        {% regroup ride_applications by status as status_list %}
+        
+        {% for status in status_list %}
+            <div class="card mb-4">
+                <div class="card-header {% if status.grouper == 'PENDING' %}bg-warning{% elif status.grouper == 'APPROVED' %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <h5 class="mb-0">{{ status.grouper|title }} Applications</h5>
+                </div>
+                
+                <div class="list-group list-group-flush">
+                    {% for application in status.list %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ application.ride.start }} → {{ application.ride.end }}</h6>
+                                    <small class="text-muted">
+                                        <i class="bi bi-calendar"></i> {{ application.ride.start_date|date:"M d, Y H:i" }}
+                                        <br>
+                                        <i class="bi bi-clock"></i> Applied: {{ application.applied_at|date:"M d, Y H:i" }}
+                                    </small>
+                                </div>
+                                <div>
+                                    {% if application.status == 'PENDING' %}
+                                    <form method="post" action="{% url 'user_profile:cancel_application' application.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm" 
+                                                    onclick="return confirm('Are you sure you want to cancel this application?')">
+                                                <i class="bi bi-x-lg"></i> Cancel
+                                            </button>
+                                        </form>
+                                    {% elif application.status == 'APPROVED' %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-lg"></i> Approved
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="bi bi-x-lg"></i> Rejected
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if application.message %}
+                                <p class="mb-0 mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-chat-quote"></i> Your message: {{ application.message }}
+                                    </small>
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> You haven't applied for any rides yet.
+        </div>
+    {% endif %}
+</div>
 
-<h1>Show rides sent</h1>
-
-
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 {% endblock %}

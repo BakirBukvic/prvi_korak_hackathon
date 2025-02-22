@@ -5,6 +5,17 @@ import os
 import random
 from django.conf import settings
 
+from django.views.generic import DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import get_user_model
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+import os
+import random
+from django.conf import settings
+from base.models import RideApplication, UserRideAssociation
+
 def calculate_penguins_saved(distance):
     # Divide distance by 83 and round to 2 decimal places
         return round(distance / 83, 2)
@@ -70,3 +81,25 @@ def pendingRides(request):
     
     return render(request, 'pending_rides.html', context)
      
+
+@login_required
+def sent_rides(request):
+    # Get all applications for the current user
+    ride_applications = RideApplication.objects.filter(
+        user=request.user
+    ).select_related('ride').order_by('-applied_at')
+    
+    return render(request, 'sent_rides.html', {
+        'ride_applications': ride_applications
+    })
+
+@login_required
+def cancel_application(request, application_id):
+    if request.method == 'POST':
+        application = get_object_or_404(RideApplication, 
+                                      id=application_id, 
+                                      user=request.user, 
+                                      status='PENDING')
+        application.delete()
+        messages.success(request, 'Application cancelled successfully')
+        return redirect('user_profile:sent_rides')
