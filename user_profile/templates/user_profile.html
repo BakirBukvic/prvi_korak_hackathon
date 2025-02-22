@@ -63,31 +63,30 @@
                 </div>
             </div>
 
-      
-        
-            <!-- Right Column - Content Area -->
             <div class="col-md-8">
-                <!-- Add your right side content here -->
-                <div class="content-area">
-                    <div class="goal-card shadow-sm">
-                        <h5>Goal Tracker</h5>
-                        <p>🎯 <strong>100 km goal</strong> | <span class="text-primary">70 km completed</span></p>
-                        <div class="progress">
-                            <div class="progress-bar bg-success" style="width: 70%;"></div>
-                        </div>
-                        <p class="text-muted">30 km left to reach your goal!</p>
-                    </div>
-
-                    <div class="carbon-card shadow-sm">
-                        <h5>Penguin salvation program</h5>
-                        <p><strong>Total penguins saved</strong> {{ penguins_saved }} </p>
-                        
-                    </div>
-                    
+                <!-- Secondary Navigation -->
+                <div class="secondary-nav mb-4">
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link {% if not request.resolver_match.url_name in 'pending_rides,sent_rides' %}active{% endif %}" 
+                               href="{% url 'user_profile:profile' %}">
+                               <i class="fas fa-home"></i> Home
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'pending_rides' %}active{% endif %}" 
+                               href="{% url 'user_profile:pending_rides' %}">
+                               <i class="fas fa-clock"></i> Pending Rides
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'sent_rides' %}active{% endif %}" 
+                               href="{% url 'user_profile:sent_rides' %}">
+                               <i class="fas fa-paper-plane"></i> Sent Rides
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </div>
-    </div>
 
     <style>
         .hero-image {

@@ -44,3 +44,29 @@ class UserProfileView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         return self.request.user
     
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from base.models import RideApplication, UserRideAssociation
+
+@login_required
+def pendingRides(request):
+    # Get all rides where the user is the driver
+    user_rides = UserRideAssociation.objects.filter(
+        user=request.user,
+        is_driver=True
+    ).values_list('ride', flat=True)
+
+    # Get pending applications for those rides
+    pending_applications = RideApplication.objects.filter(
+        ride__in=user_rides,
+        status='PENDING'
+    ).select_related('user', 'ride')
+
+    context = {
+        'pending_applications': pending_applications
+    }
+    
+    return render(request, 'pending_rides.html', context)
+     
