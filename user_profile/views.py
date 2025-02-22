@@ -186,16 +186,59 @@ def rides(request):
     past_rides = user_rides.filter(~Q(status='PREPARING')).order_by('-start_date')
     context = {'future_rides': future_rides, 'past_rides': past_rides, 'user': user}
     return render(request, 'my_rides.html', context)
-
 def remove_passenger(request, ride_id, user_id):
     if request.method == 'POST':
-        ride = get_object_or_404(Ride, id=ride_id, riders__user=request.user, riders__is_driver=True)
-        association = get_object_or_404(UserRideAssociation, ride=ride, user_id=user_id, is_driver=False)
-        association.delete()
-        ride.travelers += 1
-        ride.save()
-        return JsonResponse({'success': True})
-    return JsonResponse({'success': False})
+        try:
+            # Get the ride
+            ride = get_object_or_404(Ride, id=ride_id)
+            
+            # Verify current user is the driver
+            is_driver = UserRideAssociation.objects.filter(
+                ride=ride,
+                user=request.user,
+                is_driver=True
+            ).exists()
+            
+            if not is_driver:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'You must be the driver to remove passengers'
+                })
+
+            # Find and delete the passenger's association
+            passenger_association = UserRideAssociation.objects.get(
+                ride=ride,
+                user_id=user_id,
+                is_driver=False
+            )
+            
+            # Delete related application if it exists
+            RideApplication.objects.filter(
+                ride=ride,
+                user_id=user_id,
+                status='APPROVED'
+            ).delete()
+            
+            # Delete the association
+            passenger_association.delete()
+            
+            # Update available seats
+            ride.travelers += 1
+            ride.save()
+            
+            return JsonResponse({'success': True})
+            
+        except UserRideAssociation.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Passenger not found'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False, 
+                'error': str(e)
+            })
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
 def cancel_ride(request, ride_id):

@@ -178,14 +178,42 @@ document.querySelectorAll('.remove-passenger').forEach(button => {
         if (confirm('Are you sure you want to remove this passenger?')) {
             const userId = this.dataset.userId;
             const rideId = this.dataset.rideId;
+            
+            // Add detailed console logging
+            console.log('Remove passenger attempt:', {
+                userId: userId,
+                rideId: rideId,
+                button: this,
+                dataset: this.dataset
+            });
+            
             fetch(`/profile/remove_passenger/${rideId}/${userId}/`, {
                 method: 'POST',
-                headers: {'X-CSRFToken': '{{ csrf_token }}'}
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: [...response.headers.entries()]
+                });
+                return response.json();
+            })
             .then(data => {
-                if (data.success) location.reload();
-                else alert('Error removing passenger');
+                console.log('Response data:', data);
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Error removing passenger');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                alert('Error removing passenger');
             });
         }
     });
