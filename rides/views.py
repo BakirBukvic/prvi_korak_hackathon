@@ -153,8 +153,7 @@ class ApplyForRideView(DetailView):
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-
-
+from django.contrib import messages
 
 @login_required
 def join_ride(request, ride_id):
@@ -164,12 +163,14 @@ def join_ride(request, ride_id):
             
             # Check if user is already in the ride
             if UserRideAssociation.objects.filter(user=request.user, ride=ride).exists():
-                return JsonResponse({'success': False, 'error': 'You are already part of this ride'})
+                messages.error(request, 'You are already part of this ride')
+                return redirect('rides')
             
             # Check if there are available seats
             current_riders = UserRideAssociation.objects.filter(ride=ride).count()
             if current_riders >= ride.travelers:
-                return JsonResponse({'success': False, 'error': 'No available seats'})
+                messages.error(request, 'No available seats')
+                return redirect('rides')
             
             # Create association
             UserRideAssociation.objects.create(
@@ -178,9 +179,11 @@ def join_ride(request, ride_id):
                 is_driver=False
             )
             
-            return JsonResponse({'success': True})
+            messages.success(request, 'Successfully joined the ride! Awaiting approval.')
+            return redirect('rides')
             
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Error joining ride: {str(e)}')
+            return redirect('rides')
             
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    return redirect('rides')
