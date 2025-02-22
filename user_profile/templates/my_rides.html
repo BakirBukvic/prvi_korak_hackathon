@@ -59,16 +59,23 @@
                                                      alt="Profile photo">
                                             {% endif %}
                                             <div>
+
+
                                                 <h6 class="mb-0">{{ application.user.username }}</h6>
                                                 <small class="text-muted">Passenger</small>
                                             </div>
                                         </div>
-                                        <button class="btn btn-danger btn-sm remove-passenger" 
-                                                data-user-id="{{ application.user.id }}"
-                                                data-ride-id="{{ ride.id }}">
-                                            <i class="bi bi-x-lg"></i> Remove
-                                        </button>
+                                        <form action="{% url 'user_profile:remove_passenger' %}" method="POST">
+                                            {% csrf_token %}
+                                            <p>{{ ride_id }}</p>
+                                            <p>{{ application.user.id }}</p>
+                                            <input type="hidden" name="ride_id" value="{{ ride.id }}">
+                                            <input type="hidden" name="user_id" value="{{ application.user.id }}">
+                                            <button class="btn btn-danger" type="submit">Remove passenger</button>
+                                        </form>
+                                       
                                     </div>
+
                                 {% endfor %}
                             </div>
                         {% else %}
