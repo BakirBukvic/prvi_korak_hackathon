@@ -1,47 +1,71 @@
-Waddle Express: The Future of Carpooling
+# 🐧 Waddle Express: The Future of Carpooling
 
-Waddle Express is a cutting-edge carpool web application designed to reduce global gas emissions while offering users a fun and interactive experience. By integrating an engaging game element, Waddle Express transforms traditional carpooling into an exciting and rewarding activity.
-Key Features
+## 🌟 Key Features
+- 🗺️ Smart Route Planning with Google Maps integration
+- 🎮 Gamification with points and penguin collection system
+- 🌍 Environmental Impact Tracking
+- 🤝 Social Features and ride coordination
 
-1. Interactive UI for Route Planning
-Waddle Express provides a user-friendly interface that allows passengers and drivers to seamlessly view all available routes and destinations. The dynamic map system ensures real-time updates, making it easier to plan trips efficiently.
+## 💻 Tech Stack
+- Backend: Django
+- Frontend: HTML, CSS, JavaScript
+- Database: SQLite
+- Maps: Google Maps API
+- Authentication: Django Auth
 
-2. Gamified Experience
-To encourage participation, Waddle Express incorporates an interactive game where users earn points based on their carpooling activities. Features include:
-- 	Badges and rewards for eco-friendly behavior
-- 	Custom avatars and in-app achievements
-- Fun penguin card collection system
+## 🚀 Getting Started
 
-3. Eco-Friendly Impact Tracking
-Users can monitor their individual and collective contributions to reducing carbon footprints through real-time analytics. The app showcases:
-•	CO₂ emissions saved per ride
-•	Total shared rides taken
+### Prerequisites
+- Python 3.8+
+- Django 5.1+
+- Google Maps API key
 
+### Installation Commands
+```bash
+git clone https://github.com/yourusername/waddle-express.git
+cd waddle-express
+pip install -r requirements.txt
 
+# Configure .env file with:
+GOOGLE_MAPS_API_KEY=your_api_key_here
 
-4 Secure and Reliable Platform
-Safety is a top priority for Waddle Express. The app includes:
+# Setup database
+python manage.py migrate
 
-The Vision
-Waddle Express aims to revolutionize the way people commute by making carpooling a fun, sustainable, and efficient choice. By blending environmental consciousness with gamification, the platform encourages users to participate actively, reducing traffic congestion and making a positive impact on the planet.
-Join Waddle Express today and take a step toward a greener, more connected future!
+# Run server
+python manage.py runserver
+```
 
-Getting Started
-Installation
-To set up Waddle Express on your local machine, follow these steps:
-1.	Clone the repository:
- 
-2.	Navigate into the project directory:
- 
-3.	Pull the code:
- 
-4.	Settup local host:
- 
-Contributing
-We welcome contributions from the community! If you'd like to contribute:
-1.	Fork the repository.
-2.	Create a new branch for your feature.
-3.	Commit your changes.
-4.	Push your branch and create a pull request.
+## 🌟 Features
 
-Stack: Django
+### Ride Management
+- Create/manage rides
+- Set routes via Google Maps
+- Track ride status
+- Passenger capacity management
+
+### User Features
+- Profile statistics
+- Ride history
+- Environmental impact tracking
+- Penguin collection system (1 per 100km)
+
+### Application System
+- Apply for rides
+- Accept/reject passengers
+- Real-time status updates
+
+## 🤝 Contributing
+1. Fork repository
+2. Create feature branch (`git checkout -b feature/NewFeature`)
+3. Commit changes (`git commit -m 'Add NewFeature'`)
+4. Push branch (`git push origin feature/NewFeature`)
+5. Open Pull Request
+
+## 📝 License
+MIT License
+
+## 🙏 Acknowledgments
+- Google Maps API
+- Bootstrap
+- Django community
