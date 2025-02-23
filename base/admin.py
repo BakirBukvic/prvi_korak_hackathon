@@ -1,5 +1,5 @@
 from django.contrib import admin
-from base.models import User, UserLevel, Ride, UserRideAssociation, RideApplication, PenguinCollected, Penguin
+from base.models import User, UserLevel, Ride, UserRideAssociation, RideApplication, PenguinCollected, Penguin, GiftCard
 
 
 admin.site.register(User)
@@ -9,3 +9,4 @@ admin.site.register(UserRideAssociation)
 admin.site.register(RideApplication)
 admin.site.register(PenguinCollected)
 admin.site.register(Penguin)
+admin.site.register(GiftCard)

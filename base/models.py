@@ -178,3 +178,37 @@ class RideApplication(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s application for {self.ride.start} to {self.ride.end}"
+
+
+class GiftCard(models.Model):
+    STATUS_CHOICES = [
+        ('AVAILABLE', 'Available'),
+        ('CLAIMED', 'Claimed'),
+        ('EXPIRED', 'Expired')
+    ]
+    
+    code = models.CharField(max_length=50, unique=True)
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='gift_cards'
+    )
+    station_place_id = models.CharField(max_length=255)
+    station_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    claimed_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='AVAILABLE'
+    )
+    
+    class Meta:
+        verbose_name = 'Gift Card'
+        verbose_name_plural = 'Gift Cards'
+        
+    def __str__(self):
+        return f"Gift Card {self.code} - {self.get_status_display()}"
