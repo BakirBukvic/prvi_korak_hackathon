@@ -9,23 +9,18 @@
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h3 class="mb-0">Ride Details</h3>
             <div class="d-flex align-items-center">
-
                 {% if driver.path_to_profile_picture %}
                 <img src="{% static 'base/profile_pictures/'|add:driver.path_to_profile_picture|default:'base/profile_pictures/default_avatar.png' %}" 
-                class="rounded-circle me-2" 
-                width="40" 
-                height="40" 
-                alt="Driver photo">
-
+                     class="rounded-circle me-2" 
+                     width="40" 
+                     height="40" 
+                     alt="Driver photo">
                 {% else %}
                 <img src="{% static 'base/profile_pictures/default_picture.png' %}" 
-                class="rounded-circle me-2" 
-                width="40" 
-                height="40" 
-                alt="Driver photo">
-
-
-
+                     class="rounded-circle me-2" 
+                     width="40" 
+                     height="40" 
+                     alt="Driver photo">
                 {% endif %}
                 <span>Posted by {{ driver.username }}</span>
             </div>
@@ -81,6 +76,7 @@
                 </div>
             </div>
 
+            <!-- Map and Gas Stations List -->
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="card">
@@ -117,36 +113,47 @@
                                     </div>
                                 </div>
                             </div>
-            <!-- Map -->
-            <div class="mb-4">
-                <div id="map" style="height: 300px;" class="rounded"></div>
+                            
+                            <!-- Map -->
+                            <div class="mb-4">
+                                <div id="map" style="height: 300px;" class="rounded"></div>
+                            </div>
+                            
+                            <!-- LIST of top 5 gas stations (we'll populate this via JS) -->
+                            <h5>Gas Stations On the Way</h5>
+                            <ul id="gas-stations-list" class="list-group"></ul>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <a href="{% url 'rides' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Rides
+                                </a>
+                                
+                                <a href="https://wa.me/{{ driver.phone_number_user }}?text=Hi%20there!%20I%20would%20like%20to%20know%20more%20about%20your%20services." 
+                                   target="_blank" 
+                                   class="btn btn-outline-success">
+                                    <i class="bi bi-whatsapp"></i> Contact on WhatsApp
+                                </a>
+
+                                <form method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    {% if user.is_authenticated %}
+                                    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinRideConfirmModal">
+                                        <i class="bi bi-check-lg"></i> Join This Ride
+                                    </button>
+                                    {% else %}
+                                    <a href="{% url 'login:login' %}?next={{ request.path }}" class="btn btn-primary">
+                                        <i class="bi bi-box-arrow-in-right"></i> Login to Join Ride
+                                    </a>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Action Buttons -->
-                    <div class="d-flex justify-content-between align-items-center">
-            <a href="{% url 'rides' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Rides
-            </a>
-            
-            <a href="https://wa.me/{{ driver.phone_number_user }}?text=Hi%20there!%20I%20would%20like%20to%20know%20more%20about%20your%20services." 
-                target="_blank" 
-                class="btn btn-outline-success">
-                    <i class="bi bi-whatsapp"></i> Contact on WhatsApp
-                </a>
-
-            <form method="post" class="d-inline">
-                {% csrf_token %}
-                {% if user.is_authenticated %}
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#joinRideConfirmModal">
-                    <i class="bi bi-check-lg"></i> Join This Ride
-                </button>
-            {% else %}
-                <a href="{% url 'login:login' %}?next={{ request.path }}" class="btn btn-primary">
-                    <i class="bi bi-box-arrow-in-right"></i> Login to Join Ride
-                </a>
-            {% endif %}
-            </form>
-        </div>
+            <!-- Join Ride Modal actions -->
         </div>
     </div>
 </div>
@@ -154,17 +161,19 @@
 <!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
-<!-- Map Script -->
+<!-- Map + Places Script -->
 <script>
 function initMap() {
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
 
+    // 1. Create the map
     const map = new google.maps.Map(mapElement, {
         mapTypeId: 'terrain',
         zoom: 12
     });
 
+    // 2. Set up origin and destination
     const origin = new google.maps.LatLng(
         {{ ride.origin_latitude }},
         {{ ride.origin_longitude }}
@@ -174,15 +183,18 @@ function initMap() {
         {{ ride.destination_longitude }}
     );
 
+    // 3. Fit map to show both origin & destination
     const bounds = new google.maps.LatLngBounds();
     bounds.extend(origin);
     bounds.extend(destination);
     map.fitBounds(bounds);
 
+    // 4. Decode the route polyline into an array of LatLngs
     const decodedPath = google.maps.geometry.encoding.decodePath(
         '{{ ride.selected_route_polyline|escapejs }}'
     );
-    
+
+    // Draw the route
     new google.maps.Polyline({
         path: decodedPath,
         map: map,
@@ -192,25 +204,132 @@ function initMap() {
         strokeWeight: 3
     });
 
-    new google.maps.Marker({
-        position: origin,
-        map: map,
-        title: 'Start',
-        label: 'A'
+    // Place markers for origin & destination (optional)
+    new google.maps.Marker({ position: origin, map, title: 'Start', label: 'A' });
+    new google.maps.Marker({ position: destination, map, title: 'End', label: 'B' });
+
+    // == Collect Gas Stations Along the Way ==
+    const numSamples = 5; // how many points along route to sample
+    const samplePoints = getSampledPoints(decodedPath, numSamples);
+    
+    const service = new google.maps.places.PlacesService(map);
+    const allStations = [];  // we'll store them here
+
+    let completedRequests = 0;
+
+    samplePoints.forEach((point, index) => {
+        const request = {
+            location: point,
+            radius: 5000,
+            // Use 'keyword' in case some stations are not typed as 'gas_station'
+            keyword: 'benzinska OR pumpa OR gas station'
+        };
+
+        service.nearbySearch(request, (results, status) => {
+            completedRequests++;
+            
+            if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+                // Push them into our allStations array
+                allStations.push(...results);
+            }
+            
+            // Once all sample points have been processed, display up to 5
+            if (completedRequests === samplePoints.length) {
+                displayTopStations(allStations);
+            }
+        });
+    });
+}
+
+// Display up to 5 unique stations in the <ul> with ID "gas-stations-list"
+function displayTopStations(stations) {
+    // 1. Make them unique by place_id
+    const uniqueById = new Map();
+    stations.forEach(st => {
+        if (st.place_id && !uniqueById.has(st.place_id)) {
+            uniqueById.set(st.place_id, st);
+        }
+    });
+    const uniqueStations = Array.from(uniqueById.values());
+
+    // 2. Sort them by rating
+    uniqueStations.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+
+    // 3. Take top 5
+    const top5 = uniqueStations.slice(0, 5);
+
+    // 4. Render them in the list
+    const listEl = document.getElementById('gas-stations-list');
+    listEl.innerHTML = ''; // clear out existing
+
+    top5.forEach(station => {
+        const li = document.createElement('li');
+        li.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start');
+
+        // Create the info block
+        const infoBlock = document.createElement('div');
+        infoBlock.innerHTML = `
+            <strong>${station.name || 'Unknown Station'}</strong><br>
+            <small>${station.vicinity || 'Address not available'}</small><br>
+            ${station.rating ? 'Rating: ' + station.rating : '' }
+        `;
+
+        // Create the "Claim Gift" button
+        const btn = document.createElement('button');
+        btn.classList.add('btn', 'btn-primary', 'btn-sm');
+        btn.textContent = 'Claim Gift';
+        // We'll pass the place_id to a custom function
+        btn.addEventListener('click', () => claimGift(station.place_id));
+
+        // Put them together
+        li.appendChild(infoBlock);
+        li.appendChild(btn);
+
+        listEl.appendChild(li);
     });
 
-    new google.maps.Marker({
-        position: destination,
-        map: map,
-        title: 'End',
-        label: 'B'
-    });
+    // If none found, show a message
+    if (top5.length === 0) {
+        const noDataEl = document.createElement('li');
+        noDataEl.classList.add('list-group-item');
+        noDataEl.innerText = 'No gas stations found along this route.';
+        listEl.appendChild(noDataEl);
+    }
+}
+
+// Example "Claim Gift" function
+// You can replace this with a POST request or anything else you'd like
+function claimGift(placeId) {
+    alert(`You claimed a gift for gas station with place_id = ${placeId}`);
+}
+
+// Helper: sample points along the route
+function getSampledPoints(path, numSamples) {
+    if (!path || path.length === 0) return [];
+    if (numSamples <= 1) return [ path[0] ];
+
+    const sampled = [ path[0] ];
+    const totalSegments = numSamples - 1;
+    const step = path.length / totalSegments;
+
+    for (let i = 1; i < totalSegments; i++) {
+        const idx = Math.floor(i * step);
+        if (idx < path.length) {
+            sampled.push(path[idx]);
+        }
+    }
+
+    // Add last point if not included
+    if (path[path.length - 1] !== sampled[sampled.length - 1]) {
+        sampled.push(path[path.length - 1]);
+    }
+
+    return sampled;
 }
 
 document.getElementById('confirmJoinRide').addEventListener('click', function() {
     // Get the form that wraps the join button
     const form = document.querySelector('form');
-    // Submit the form
     form.submit();
     // Close the modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('joinRideConfirmModal'));
@@ -218,7 +337,7 @@ document.getElementById('confirmJoinRide').addEventListener('click', function() 
 });
 </script>
 
-
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII&libraries=geometry&callback=initMap" async defer></script>
+<!-- IMPORTANT: 'places' library must be included -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYNmHSbg3hBxI5CFQUWPlJsMPjzcvtzII
+&libraries=geometry,places&callback=initMap" async defer></script>
 {% endblock %}
