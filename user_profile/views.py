@@ -12,6 +12,11 @@ import random
 from django.conf import settings
 from base.models import UserLevel
 
+def calculate_co2_saved(self):
+    # 130g (0.13kg) CO2 per km
+    return round(self.km_passed * 0.13, 2)  # Returns kg of CO2 saved
+
+
 def calculate_penguins_saved(distance):
     return round(distance / 83, 2)
 

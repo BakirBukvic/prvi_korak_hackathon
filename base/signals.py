@@ -33,27 +33,23 @@ def ensure_user_has_level(sender, instance, created, **kwargs):
 
 
 
-
 @receiver(pre_save, sender=Ride)
 def handle_ride_finish(sender, instance, **kwargs):
     try:
-        # Check if this is an existing ride (not a new one)
         if instance.pk:
             old_instance = Ride.objects.get(pk=instance.pk)
             
-            # Check if status is being changed to FINISHED
+            # Check if ride status changed to FINISHED
             if old_instance.status != 'FINISHED' and instance.status == 'FINISHED':
-                # Get all passengers including driver
                 passengers = UserRideAssociation.objects.filter(
                     ride=instance
                 ).select_related('user')
                 
-                # Update each passenger's stats
                 for passenger in passengers:
                     user = passenger.user
-                    user.km_passed += instance.distance_km
-                    user.number_of_rides += 1
-                    user.save()  # This will trigger the level update signal
+                    # Use distance instead of distance_km - this was the issue
+                    new_km = float(instance.distance)  # Convert to float
+                    user.update_stats(new_km)
     except Ride.DoesNotExist:
         pass
 
@@ -69,28 +65,39 @@ def update_penguins_saved(sender, instance, **kwargs):
             # Calculate penguins saved (1 penguin per 100km)
             instance.penguins_saved = instance.km_passed // 100
 
-
 @receiver(pre_save, sender=User)
 def create_penguin_collection(sender, instance, **kwargs):
     """Create PenguinCollected entries when user gets new penguins"""
-    if instance.pk:  # Only for existing users
+    if instance.pk:
         old_instance = User.objects.get(pk=instance.pk)
-        new_penguins = instance.penguins_saved - old_instance.penguins_saved
+        old_penguins = int(old_instance.penguins_saved)
+        new_penguins = int(instance.penguins_saved)
         
-        # Only proceed if user got new penguins
-        if new_penguins > 0:
-            # Get all available penguins
+        # Calculate difference for new penguins only
+        penguin_difference = max(0, new_penguins - old_penguins)
+        
+        if penguin_difference > 0:
             available_penguins = Penguin.objects.all()
             
             if available_penguins.exists():
-                # Create new PenguinCollected entries for each new penguin
-                for _ in range(new_penguins):
-                    # Get random penguin
+                for _ in range(penguin_difference):
                     random_penguin = random.choice(available_penguins)
-                    
-                    # Create new collection entry if it doesn't exist
                     PenguinCollected.objects.get_or_create(
                         user=instance,
                         penguin=random_penguin,
                         defaults={'is_collected': False}
                     )
+
+
+
+@receiver(post_save, sender=PenguinCollected)
+def update_penguin_notifications(sender, instance, **kwargs):
+    """Update notification count when penguin collection status changes"""
+    uncollected_count = PenguinCollected.objects.filter(
+        user=instance.user,
+        is_collected=False
+    ).count()
+    
+    # Store the count in the user's session
+    if hasattr(instance.user, 'session'):
+        instance.user.session['uncollected_penguins'] = uncollected_count

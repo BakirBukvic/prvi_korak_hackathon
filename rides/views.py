@@ -12,13 +12,15 @@ import re
 
 from django.db.models import Count, Q
 from django.urls import reverse
+
+
+
 class RideListView(ListView):
     model = Ride
     template_name = 'rides.html'
     context_object_name = 'rides'
 
     def get_queryset(self):
-        # Only get rides with status 'PREPARING'
         return Ride.objects.filter(
             status='PREPARING'
         ).annotate(
@@ -29,9 +31,11 @@ class RideListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Calculate points for each ride
         for ride in context['rides']:
-            print(f"Ride {ride.id}: {ride.applicant_count} applicants "
-                  f"({ride.pending_count} pending, {ride.approved_count} approved)")
+            ride.points = int(float(ride.distance) * 0.1)
+            ride.co2_saved = round(float(ride.distance) * 0.13, 2)  # 130g (0.13kg) CO2 per km
+            print(ride.points)  # Convert Decimal to float first
         return context
 
 class MakeRideView(CreateView):

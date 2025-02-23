@@ -38,3 +38,13 @@ def unlock_penguin(request, penguin_id):
         })
     except PenguinCollected.DoesNotExist:
         return JsonResponse({'success': False}, status=404)
+    
+
+
+@login_required
+def uncollected_count(request):
+    count = PenguinCollected.objects.filter(
+        user=request.user,
+        is_collected=False
+    ).count()
+    return JsonResponse({'count': count})

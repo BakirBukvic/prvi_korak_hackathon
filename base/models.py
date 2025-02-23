@@ -27,24 +27,41 @@ class UserLevel(models.Model):
 
     class Meta:
         ordering = ['points']  # Order levels by required points
+
+
+        
 class User(AbstractUser):
     level = models.ForeignKey(UserLevel, on_delete=models.SET_NULL, null=True)
     km_passed = models.IntegerField(default=0)
     number_of_rides = models.IntegerField(default=0)
-    penguins_saved = models.IntegerField(default=0)  # New field
-    # ... other fields ...
+    penguins_saved = models.IntegerField(default=0)
+    co2_saved = models.FloatField(default=0)  # Stored in kilograms
 
     def calculate_points(self):
         return round(self.km_passed * 0.1)  # 0.1 points per km
 
+    def calculate_co2_saved(self):
+        # 130g (0.13kg) CO2 per km
+        return round(self.km_passed * 0.13, 2)  # Returns kg of CO2 saved
+    
+    def update_stats(self, new_km):
+        """Update user stats when completing a ride"""
+        self.km_passed += new_km
+        self.number_of_rides += 1
+        self.penguins_saved = int(self.km_passed // 100)  # Explicitly convert to int
+        self.co2_saved = self.calculate_co2_saved()
+        self.save()
+        self.update_level()
+
     def update_level(self):
+        """Update user level based on current points"""
         current_points = self.calculate_points()
-        appropriate_level = UserLevel.objects.filter(
+        new_level = UserLevel.objects.filter(
             points__lte=current_points
         ).order_by('-points').first()
         
-        if appropriate_level and (not self.level or self.level.level < appropriate_level.level):
-            self.level = appropriate_level
+        if new_level and (not self.level or self.level.points < new_level.points):
+            self.level = new_level
             self.save()
 
 class Penguin(models.Model):

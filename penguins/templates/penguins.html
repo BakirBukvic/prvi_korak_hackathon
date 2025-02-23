@@ -9,7 +9,7 @@
     <div class="row g-4">
         {% for penguin in penguins %}
         <div class="col-md-3 col-sm-6">
-            <div class="card h-100 {% if not penguin.is_collected %}card-locked{% endif %}" 
+            <div class="card h-100 {% if not penguin.is_collected %}card-locked{% else %}card-{{ penguin.penguin.rarity|lower }}{% endif %}" 
                  {% if not penguin.is_collected %}
                  data-penguin-id="{{ penguin.id }}"
                  onclick="unlockPenguin(this)"
@@ -26,12 +26,13 @@
                 <div class="card-body text-center">
                     {% if penguin.is_collected %}
                         <h5 class="card-title">{{ penguin.penguin.penguin_name }}</h5>
+                        <span class="badge" style="background-color: {{ penguin.penguin.rarity_color }}">
+                            {{ penguin.penguin.get_rarity_display }}
+                        </span>
                     {% else %}
                         <h5 class="card-title">???</h5>
+                        <span class="badge bg-secondary">Locked</span>
                     {% endif %}
-                    <span class="badge {% if penguin.is_collected %}bg-success{% else %}bg-secondary{% endif %}">
-                        {{ penguin.is_collected|yesno:"Unlocked,Locked" }}
-                    </span>
                 </div>
             </div>
         </div>
@@ -60,15 +61,82 @@
     filter: brightness(0.7);
 }
 
+.card-common {
+    background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
+    border-color: #808080;
+}
+
+.card-rare {
+    background: linear-gradient(135deg, #fff 0%, #b3e0ff 100%);
+    border-color: #0077be;
+}
+
+.card-epic {
+    background: linear-gradient(135deg, #fff 0%, #e6ccff 100%);
+    border-color: #9b30ff;
+}
+
+.card-legendary {
+    background: linear-gradient(135deg, #fff 0%, #ffe680 100%);
+    border-color: #ffd700;
+}
+
 .card-img-top {
     height: 200px;
     object-fit: contain;
 }
+
+/* Add these new styles */
+@keyframes unlock-animation {
+    0% { transform: scale(1); filter: brightness(0.7); }
+    50% { transform: scale(1.2); filter: brightness(1.2); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+.unlocking {
+    animation: unlock-animation 0.8s ease-in-out;
+}
+
+.sparkle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+
+
 </style>
 
+
+<audio id="unlockSound" preload="auto">
+    <source src="{% static 'base/sounds/unlock.mp3' %}" type="audio/mpeg">
+</audio>
+
 <script>
+
+
+
 function unlockPenguin(element) {
     const penguinId = element.dataset.penguinId;
+    const unlockSound = document.getElementById('unlockSound');
+    
+    // Play sound
+    unlockSound.currentTime = 0; // Reset sound to start
+    unlockSound.play();
+    
+    // Add sparkle effect
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    element.appendChild(sparkle);
+    
+    // Add unlocking animation
+    element.classList.add('unlocking');
+    sparkle.style.opacity = '1';
+    
     fetch(`/penguins/unlock/${penguinId}/`, {
         method: 'POST',
         headers: {
@@ -78,9 +146,12 @@ function unlockPenguin(element) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload(); // Refresh to show unlocked penguin
+            setTimeout(() => {
+                location.reload();
+            }, 800); // Wait for animation to finish
         }
     });
 }
+
 </script>
 {% endblock %}
