@@ -8,24 +8,19 @@ Waddle Express provides a user-friendly interface that allows passengers and dri
 
 2. Gamified Experience
 To encourage participation, Waddle Express incorporates an interactive game where users earn points based on their carpooling activities. Features include:
-•	Badges and rewards for eco-friendly behavior
-•	Leaderboards to track user rankings
-•	Custom avatars and in-app achievements
+- 	Badges and rewards for eco-friendly behavior
+- 	Custom avatars and in-app achievements
+- Fun penguin card collection system
 
 3. Eco-Friendly Impact Tracking
 Users can monitor their individual and collective contributions to reducing carbon footprints through real-time analytics. The app showcases:
 •	CO₂ emissions saved per ride
 •	Total shared rides taken
-•	Environmental impact reports
 
-4. Smart Matching System
-Using an advanced algorithm, Waddle Express matches drivers with passengers based on proximity, destination, and preferences. This ensures an optimal and safe carpooling experience while minimizing empty seats.
 
-5. Secure and Reliable Platform
+
+4 Secure and Reliable Platform
 Safety is a top priority for Waddle Express. The app includes:
-•	Verified driver and passenger profiles
-•	Live location sharing
-•	Ratings and reviews for a trustworthy community
 
 The Vision
 Waddle Express aims to revolutionize the way people commute by making carpooling a fun, sustainable, and efficient choice. By blending environmental consciousness with gamification, the platform encourages users to participate actively, reducing traffic congestion and making a positive impact on the planet.
